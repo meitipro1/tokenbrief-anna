@@ -14,7 +14,7 @@ export function BriefTextView(p: { s: Strings; text: Text; render: (x: string) =
           {p.s.sections.questions}
         </h3>
         <ol className="list-decimal space-y-1.5 ps-5 text-[15px] leading-relaxed">
-          {p.text.questions.map((q, i) => <li key={i}>{p.render(q)}</li>)}
+          {p.text.questions.map((q, i) => <li key={i} dir="auto">{p.render(q)}</li>)}
         </ol>
       </section>
     </div>
@@ -27,7 +27,7 @@ function Block(p: { title: string; children: string }) {
       <h3 className="mb-1.5 text-[13px] font-semibold uppercase tracking-wide text-[var(--muted)]">
         {p.title}
       </h3>
-      <p className="text-[15px] leading-relaxed">{p.children}</p>
+      <p className="text-[15px] leading-relaxed" dir="auto">{p.children}</p>
     </section>
   );
 }

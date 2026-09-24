@@ -15,7 +15,7 @@ export function QueryInput(p: { s: Strings; busy: boolean; value: string;
       <form className={`flex gap-2 rounded-xl border bg-[var(--card)] p-1.5 ${focus
         ? "border-[var(--accent)]" : "border-[var(--line)]"}`}
         onSubmit={(e) => { e.preventDefault(); if (p.value.trim()) p.onSubmit(p.value); }}>
-        <input className="tap min-w-0 flex-1 bg-transparent px-2 text-[15px] outline-none"
+        <input className="query-input tap min-w-0 flex-1 bg-transparent px-2 text-[15px] outline-none"
           dir="ltr" value={p.value} placeholder={p.s.placeholder} aria-label={p.s.placeholder}
           autoComplete="off" spellCheck={false} onFocus={() => setFocus(true)}
           onBlur={() => setFocus(false)} onChange={(e) => p.onChange(e.target.value)} />

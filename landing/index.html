@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TokenBrief — paste a token, get the brief</title>
+  <meta name="description" content="Ticker, contract address or a CoinGecko / DexScreener link → what it is, live numbers, risk flags, 5 questions to ask, and a copy-ready summary. English and Persian. Runs inside Anna." />
+  <meta property="og:title" content="TokenBrief — paste a token, get the brief" />
+  <meta property="og:description" content="Live numbers, rule-based risk flags and a shareable summary for any coin or on-chain token, in English and Persian, inside Anna." />
+  <meta property="og:image" content="https://tokenbrief-anna.vercel.app/brand/cover-1600x900.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/"><img src="/brand/logo.svg" alt="" width="32" height="32" /><span><b>Token</b>Brief</span></a>
+    <button id="lang" class="ghost" type="button" aria-label="Language">فارسی</button>
+  </header>
+
+  <main>
+    <section class="hero" data-lang="en">
+      <h1>Paste a token.<br />Get the brief.</h1>
+      <p class="lead">Ticker, contract address or a CoinGecko / DexScreener link → what it is, key
+        numbers, risk flags, five questions to ask, and a copy-ready summary. In English or Persian.</p>
+      <div class="cta">
+        <a class="primary store" href="https://anna.partners">Open in Anna</a>
+        <span class="muted">free · no API keys · no wallet</span>
+      </div>
+      <p class="pending muted" hidden>The direct store link goes live when Anna approves TokenBrief. Until then, sign up at anna.partners and search “TokenBrief” in the App Store.</p>
+    </section>
+
+    <section class="hero" data-lang="fa" dir="rtl" hidden>
+      <h1>یک توکن بچسبانید.<br />خلاصه‌اش را بگیرید.</h1>
+      <p class="lead">نماد، آدرس قرارداد یا لینک CoinGecko / DexScreener را وارد کنید. توکن‌بریف دادهٔ زنده
+        را از منابع عمومی می‌گیرد و در چند ثانیه یک خلاصهٔ مرتب می‌سازد: این توکن چیست، اعداد کلیدی
+        (قیمت، تغییر ۲۴ ساعته، ارزش بازار، حجم، نقدینگی)، پرچم‌های ریسک مثل جفت تازه یا نقدینگی کم،
+        و پنج سؤالی که قبل از خرید باید بپرسید؛ با خروجی فارسی و متن آماده برای تلگرام و X.</p>
+      <div class="cta">
+        <a class="primary store" href="https://anna.partners">باز کردن در Anna</a>
+        <span class="muted">رایگان · بدون کلید API · بدون کیف پول</span>
+      </div>
+      <p class="pending muted" hidden>لینک مستقیم فروشگاه بعد از تأیید توکن‌بریف توسط Anna فعال می‌شود. تا آن موقع در anna.partners ثبت‌نام کنید و «TokenBrief» را در فروشگاه برنامه‌ها جستجو کنید.</p>
+    </section>
+
+    <figure class="shot">
+      <img id="demo" src="/demo.gif" alt="TokenBrief demo: paste PEPE, the brief fills in with live numbers and flags, then switches to Persian" width="560" height="444" />
+    </figure>
+
+    <section class="tiles" data-lang="en">
+      <div><h3>Live numbers, not memory</h3><p>Every figure comes from CoinGecko and DexScreener at run time, with its source and a timestamp. The AI writes the words; a validator rejects any number it types.</p></div>
+      <div><h3>Risk flags that matter</h3><p>Fresh pair · low liquidity · twin tickers · FDV gap · no verified socials · single pool · price spike · volume anomaly · buys-without-sells hint. Tap “Why?” for the rule and the numbers.</p></div>
+      <div><h3>Made for group chats</h3><p>One tap copies a clean summary for X or Telegram. Ask follow-up questions about the same brief. Switch the whole brief to Persian.</p></div>
+    </section>
+    <section class="tiles" data-lang="fa" dir="rtl" hidden>
+      <div><h3>اعداد زنده، نه حافظه</h3><p>هر عدد در لحظه از CoinGecko و DexScreener می‌آید، با منبع و زمان. هوش مصنوعی فقط متن را می‌نویسد و هر عددی که خودش بنویسد رد می‌شود.</p></div>
+      <div><h3>پرچم‌های ریسک مهم</h3><p>جفت تازه · نقدینگی کم · نماد تکراری · شکاف FDV · نبودِ شبکهٔ اجتماعی تأییدشده · یک استخر · جهش قیمت · حجم غیرعادی · خرید بدون فروش. با «چرا؟» قاعده و اعداد را ببینید.</p></div>
+      <div><h3>برای گروه‌های تلگرامی</h3><p>با یک لمس، خلاصهٔ تمیز برای X یا تلگرام کپی می‌شود. دربارهٔ همان بریف سؤال بپرسید. کل بریف را فارسی کنید.</p></div>
+    </section>
+
+    <section class="steps" data-lang="en">
+      <h2>Use TokenBrief in 3 steps</h2>
+      <ol>
+        <li>Go to <a href="https://anna.partners">anna.partners</a> and create an account; confirm the verification email.</li>
+        <li>Open TokenBrief in the Anna App Store (search “TokenBrief”) and press <b>Install</b>.</li>
+        <li>Open the app, paste a ticker, contract address or link, press <b>Brief</b>. Tap <b>فارسی</b> for Persian.</li>
+      </ol>
+      <p class="muted">Stuck? Message <a href="https://t.me/meitipro">@meitipro</a> on Telegram.</p>
+    </section>
+    <section class="steps" data-lang="fa" dir="rtl" hidden>
+      <h2>استفاده از توکن‌بریف در ۳ قدم</h2>
+      <ol>
+        <li>به <a href="https://anna.partners">anna.partners</a> بروید و حساب بسازید؛ ایمیل تأیید را باز کنید.</li>
+        <li>توکن‌بریف را در فروشگاه برنامه‌های Anna پیدا کنید («TokenBrief» را جستجو کنید) و <b>Install</b> را بزنید.</li>
+        <li>برنامه را باز کنید، نماد، آدرس قرارداد یا لینک را بچسبانید و <b>بریف</b> را بزنید. برای فارسی <b>فارسی</b> را بزنید.</li>
+      </ol>
+      <p class="muted">مشکلی بود؟ در تلگرام به <a href="https://t.me/meitipro">@meitipro</a> پیام بدهید.</p>
+    </section>
+
+    <section class="gallery">
+      <img src="/shots/02-desktop-flags.png" alt="Risk flags with the rule and evidence behind each" loading="lazy" />
+      <img src="/shots/04-mobile-brief.png" alt="Mobile brief for dogwifhat from a DexScreener link" loading="lazy" />
+      <img src="/shots/05-mobile-persian.png" alt="The same brief in Persian" loading="lazy" />
+    </section>
+  </main>
+
+  <footer>
+    <p data-lang="en">Not financial advice. Data from CoinGecko and DexScreener public APIs. Built on Anna by <a href="https://x.com/meitipro1">@meitipro1</a> · <a href="/privacy">Privacy</a> · <a href="https://t.me/meitipro">Support (Telegram)</a> · <a href="https://github.com/meitipro1/tokenbrief-anna">GitHub</a></p>
+    <p data-lang="fa" dir="rtl" hidden>توصیهٔ مالی نیست. داده از API عمومی CoinGecko و DexScreener. ساخته‌شده روی Anna توسط <a href="https://x.com/meitipro1">@meitipro1</a> · <a href="/privacy">حریم خصوصی</a> · <a href="https://t.me/meitipro">پشتیبانی (تلگرام)</a></p>
+  </footer>
+  <script src="/app.js" defer></script>
+  <script src="/_vercel/insights/script.js" defer></script>
+</body>
+</html>

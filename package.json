@@ -2,7 +2,9 @@
   "name": "tokenbrief-anna",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "packageManager": "pnpm@10.18.2",
   "scripts": {
     "manifest": "tsx scripts/manifest.ts",
@@ -16,10 +18,18 @@
     "log:post": "tsx scripts/log-post.ts",
     "checkpoint": "tsx scripts/checkpoint.ts"
   },
-  "pnpm": { "onlyBuiltDependencies": ["esbuild"] },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
   "devDependencies": {
     "@anna-ai/cli": "0.1.53",
     "@types/node": "^22.7.0",
+    "@types/pngjs": "^6.0.5",
+    "gifenc": "1.0.3",
+    "playwright": "1.55.0",
+    "pngjs": "7.0.0",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0"
   }
