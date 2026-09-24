@@ -25,8 +25,8 @@ export function FlagList(p: { s: Strings; flags: RiskFlag[] }) {
   return (
     <ul className="space-y-2">
       {exitRisk && (
-        <li className={`rounded-lg border-2 p-3 text-sm font-semibold ${TONE.high}`} dir="ltr">
-          Exit-liquidity risk: no sells, a single pool, and a fresh pair together.
+        <li className={`rounded-lg border-2 p-3 text-sm font-semibold ${TONE.high}`}>
+          {p.s.exitRisk}
         </li>
       )}
       {p.flags.map((f) => <FlagItem key={f.code + f.severity} s={p.s} flag={f} />)}
@@ -45,7 +45,9 @@ function FlagItem(p: { s: Strings; flag: RiskFlag }) {
           <span className="me-2 inline-block rounded px-1.5 py-0.5 font-mono text-[11px]
             font-semibold uppercase tracking-wide ring-1 ring-current">{p.s.severity[f.severity]}</span>
           <span className="font-mono text-[12px] font-semibold">{f.code}</span>
-          <p className="mt-1 text-[14px]">{f.message}</p>
+          <p className="mt-1 text-[14px]" dir="auto">
+            {p.s.flagMessages[`${f.code}:${f.severity}`] ?? f.message}
+          </p>
           {skipped ? <p className="mt-1 text-[13px] text-[var(--muted)]">
             {p.s.notChecked}: {String(skipped)}</p> : null}
         </div>

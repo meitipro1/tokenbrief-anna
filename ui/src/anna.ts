@@ -67,7 +67,7 @@ export function unwrapTool<T>(res: unknown): T {
 interface Sdk {
   AnnaAppRuntime: { connect(): Promise<Runtime> };
 }
-interface Runtime {
+export interface Runtime {
   tools: { invoke(a: object, o?: object): Promise<unknown> };
   llm: { complete(a: object, o?: object): Promise<unknown> };
   storage: { get(a: object): Promise<unknown>; set(a: object): Promise<unknown> };
@@ -85,7 +85,11 @@ export async function connectAnna(): Promise<AnnaClient> {
     if (import.meta.env.DEV) return (await import("./mock")).mockAnna(); // pnpm --filter ui dev
     throw err;
   }
-  const anna = await mod.AnnaAppRuntime.connect(); // hello + 10 s heartbeat
+  return wrapRuntime(await mod.AnnaAppRuntime.connect()); // hello + 10 s heartbeat
+}
+
+/** Typed client over a connected runtime (the SDK, or mountBundle's runtime in tests). */
+export function wrapRuntime(anna: Runtime): AnnaClient {
   return {
     mock: false,
     async invokeTool<T>(method: string, args: object, timeoutMs = 30_000): Promise<T> {

@@ -20,7 +20,6 @@
         "binary_artifacts": {
           "linux-x86_64": { "path": "release/tokenbrief-executa-{version}-linux-x86_64.tar.gz", "entrypoint": "tokenbrief-executa" },
           "linux-aarch64": { "path": "release/tokenbrief-executa-{version}-linux-aarch64.tar.gz", "entrypoint": "tokenbrief-executa" },
-          "darwin-arm64": { "path": "release/tokenbrief-executa-{version}-darwin-arm64.tar.gz", "entrypoint": "tokenbrief-executa" },
           "darwin-x86_64": { "path": "release/tokenbrief-executa-{version}-darwin-x86_64.tar.gz", "entrypoint": "tokenbrief-executa" },
           "windows-x86_64": { "path": "release/tokenbrief-executa-{version}-windows-x86_64.zip", "entrypoint": "tokenbrief-executa.exe" }
         }

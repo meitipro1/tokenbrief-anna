@@ -1,0 +1,22 @@
+# Decisions and deviations from the roadmap PDF
+
+Every scope cut, fallback or deviation, with the reason, so a fresh session can pick up.
+The PDF's own rule applies: the live docs / scaffold / `--help` win over the PDF.
+
+| ID | Date | Decision | Why |
+|---|---|---|---|
+| D-1 | 2026-09-25 | Executa referenced as `bundled:tokenbrief` via `app.json#bundled_executas`; UI reads `window.__ANNA_TOOL_IDS__.tokenbrief` from `bundle/anna-tool-ids.js`. `scripts/manifest.ts` no longer swaps tool ids. | Current CLI + official examples mint and substitute the id at publish; replaces P-9.13 step 4's manual swap and removes a class of "wrong tool_id" review failures. |
+| D-2 | 2026-09-25 | Distribution profile `binary` (active) with `binary_artifacts` built by `@yao-pkg/pkg` (Node 22 embedded) for linux-x86_64, linux-aarch64, darwin-x86_64, windows-x86_64; `npm` and `local` profiles kept as alternatives. | Uploaded directly by `apps cut` (no npm account, no public URL needed); runs on Cloud Agents without Node. Node 20 pkg bases do not exist in pkg-fetch v3.6, Node 22 do. |
+| D-3 | 2026-09-25 | No darwin-arm64 artifact. | Apple Silicon requires a code signature; pkg cannot sign from Windows. M-series agents fall back to darwin-x86_64 (Rosetta) per the Agent's OS-prefix resolution. Build on a Mac later to add it. |
+| D-4 | 2026-09-25 | Manifest: no `llm.sample` host capability, no `chat` grant, no `summary_template`, storage grants `get,set` only, window `set_title` only. | Grant only what the bundle calls (validate --strict ACL grep); `llm.sample` is for Executa-side sampling; summary_template placeholders have no documented filler. |
+| D-5 | 2026-09-25 | SDK wrapper treats calls as resolving to the bare result and rejecting with `.code`. | Verified in `@anna-ai/app-runtime` 0.16.1 source and the harness RPC log (Ch. 5 §5.6 VERIFY). |
+| D-6 | 2026-09-25 | Persian view keeps Latin digits (numbers table LTR; prose substitution uses en-US formatting, units translated). | Listing copy, FAQ and screenshots (Ch. 12) promise "numbers stay in Latin digits so they match the sources"; §6.6.5's fa-IR digits contradicted that. Reviewers compare listing to behaviour. |
+| D-7 | 2026-09-25 | `NO_CG_LISTING` and `NO_VERIFIED_SOCIALS` skip (→ PARTIAL_DATA "not checked") when CoinGecko itself failed and no cgId is known. | Otherwise a CoinGecko 429 made PEPE show "not listed on CoinGecko" — a false statement (observed live). |
+| D-8 | 2026-09-25 | Tokens whose DEX liquidity sits mostly in pools where they are the **quote** side (USDT, WETH) are marked `PairsResult.quoteAsset`; liquidity rules skip, SINGLE_PAIR/PAIR_CONCENTRATION do not fire, pool age uses both sides. Third addition to the §6.2 types. | Live USDT brief showed "$938 liquidity, LOW_LIQUIDITY:high" from dust base-side pools. |
+| D-9 | 2026-09-25 | VOLUME_ANOMALY (wash-trading hint) compares **DEX** volume (sum over kept pairs) with DEX liquidity; the dead-volume branch keeps total volume. | Ch. 3 §3.8 defines it on DexScreener volume; CoinGecko total volume includes CEX trading and flagged USDT/ARB. |
+| D-10 | 2026-09-25 | Unknown tool name in `invoke` → `-32601` (Ch. 10 used -32602). | reference/executa-protocol.md: "-32601 Method not found — Unknown RPC method or unknown tool name". |
+| D-11 | 2026-09-25 | UI `tools.invoke` timeout 30 s (PDF: 20 s). | Limiter can queue a CoinGecko call up to 20 s plus an 8 s fetch; a 20 s UI timeout could abort valid slow calls. Still far below the 90 s clamp. |
+| D-12 | 2026-09-25 | Resolve cache keys include the hint type (`cg:`, `cmc:`, `addr:`, `pair:`, `sym:`). | CoinGecko and CMC URLs with the same slug shared a cache entry (observed live with PEPE). |
+| D-13 | 2026-09-25 | Validator allow list = symbol, name and categories that contain digits. | "Layer 1", "1INCH" would otherwise fail the numeral rule on every brief. Numbers still cannot come from the model. |
+| D-14 | 2026-09-25 | System prompt kept verbatim (§6.6.2); prompt-injection via token descriptions is contained by the strict schema + numeral validator rather than by rewording. | P-9.8 forbids changing the prompt; §11.11 asks for injection resistance. The validator already rejects anything that is not the schema. |
+| D-15 | 2026-09-25 | Share link = landing page with UTM (`VITE_SHARE_LINK`), not the store URL. | Store URL shape is unknown until approval; the landing page carries the "Open in Anna" button and is measurable. Update after approval (new version, no re-review needed). |

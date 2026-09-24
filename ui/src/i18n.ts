@@ -70,6 +70,8 @@ const en = {
     TRANSLATE_FAILED: "Persian version unavailable right now.",
   } as Record<string, string>,
   retry: "Retry",
+  flagMessages: {} as Record<string, string>, // English uses the Executa's own message
+  exitRisk: "Exit-liquidity risk: no sells, a single pool, and a fresh pair together.",
   mockBanner: "Preview mode: recorded data and a canned AI reply (not connected to Anna).",
 };
 
@@ -143,6 +145,29 @@ const fa: Strings = {
     TRANSLATE_FAILED: "نسخهٔ فارسی الان در دسترس نیست.",
   },
   retry: "تلاش دوباره",
+  flagMessages: {
+    "FRESH_PAIR:high": "نخستین جفت معاملاتی همین تازگی ساخته شده است.",
+    "FRESH_PAIR:warn": "نخستین جفت معاملاتی تازه است.",
+    "LOW_LIQUIDITY:high": "نقدینگی صرافی‌های غیرمتمرکز بسیار کم است؛ حتی فروش‌های کوچک قیمت را جابه‌جا می‌کند.",
+    "LOW_LIQUIDITY:warn": "نقدینگی صرافی‌های غیرمتمرکز کم است.",
+    "THIN_VS_CAP:warn": "نقدینگی در مقایسه با ارزش بازار ناچیز است.",
+    "TWIN_TICKER:warn": "کوین‌های فهرست‌شدهٔ دیگری از همین نماد استفاده می‌کنند؛ آدرس قرارداد را بررسی کنید.",
+    "FDV_MC_GAP:high": "بیشتر عرضه هنوز در گردش نیست؛ آزادسازی‌ها می‌توانند سهم دارندگان را رقیق کنند.",
+    "FDV_MC_GAP:warn": "بخش بزرگی از عرضه هنوز در گردش نیست.",
+    "NO_VERIFIED_SOCIALS:high": "هیچ وب‌سایت یا حساب X تأییدشده‌ای برای این توکن ثبت نشده است.",
+    "SELF_REPORTED_SOCIALS:info": "لینک‌های اجتماعی نمایش‌داده‌شده خوداظهاری در DexScreener هستند، نه تأییدشده.",
+    "SINGLE_PAIR:warn": "این توکن فقط در یک استخر معامله می‌شود.",
+    "PAIR_CONCENTRATION:info": "تقریباً تمام نقدینگی در یک استخر است.",
+    "PRICE_SPIKE:high": "قیمت در روز گذشته به‌شدت جابه‌جا شده است.",
+    "PRICE_SPIKE:warn": "قیمت در روز گذشته تند جابه‌جا شده است.",
+    "VOLUME_ANOMALY:warn": "حجم معاملات نسبت به نقدینگی بسیار زیاد است که می‌تواند نشانهٔ معاملات صوری باشد.",
+    "VOLUME_ANOMALY:info": "حجم معاملات برای کوینی با این اندازه بسیار کم است.",
+    "NO_SELLS:high": "در روز گذشته خرید بوده اما هیچ فروشی نبوده است (نشانهٔ احتمالی هانی‌پات).",
+    "SELL_PRESSURE:info": "در روز گذشته تعداد فروش‌ها به‌وضوح بیشتر از خریدها بوده است.",
+    "NO_CG_LISTING:warn": "این توکن در CoinGecko فهرست نشده است.",
+    "PARTIAL_DATA:info": "بخشی از داده در دسترس نبود، بنابراین برخی بررسی‌ها انجام نشد.",
+  },
+  exitRisk: "ریسک نقدشوندگی: نبودِ فروش، یک استخر و جفت تازه هم‌زمان.",
   mockBanner: "حالت پیش‌نمایش: دادهٔ ضبط‌شده و پاسخ آمادهٔ هوش مصنوعی (متصل به Anna نیست).",
 };
 

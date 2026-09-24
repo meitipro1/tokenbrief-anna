@@ -12,3 +12,4 @@ docs/accounts.md
 screenshots/tmp/
 *.log
 .vercel
+release/
