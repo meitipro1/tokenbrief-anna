@@ -1,0 +1,1 @@
+{"tool":"resolve_token","arguments":{"query":"NOTATOKEN123"},"result":{"success":true,"tool":"resolve_token","data":{"status":"not_found","query":{"raw":"NOTATOKEN123","kind":"ticker"},"source":"coingecko","resolvedAt":"2026-09-24T21:55:54.461Z"}}}

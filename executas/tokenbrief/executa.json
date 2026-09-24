@@ -1,0 +1,43 @@
+{
+  "slug": "tokenbrief",
+  "name": "TokenBrief Data",
+  "version": "0.1.0",
+  "executa_type": "tool",
+  "description": "Resolves a crypto token from a ticker, contract address or CoinGecko/CoinMarketCap/DexScreener link and returns live metrics, DEX pairs and rule-based risk flags from CoinGecko and DexScreener (keyless).",
+
+  "tool_id": "tool-dev-tokenbrief",
+  "type": "node",
+  "command": ["node", "dist/plugin.js"],
+  "enabled": true,
+
+  "distribution": {
+    "active": "binary",
+    "profiles": {
+      "binary": {
+        "type": "binary",
+        "executable_name": "tokenbrief-executa",
+        "supports_protocol": true,
+        "binary_artifacts": {
+          "linux-x86_64": { "path": "release/tokenbrief-executa-{version}-linux-x86_64.tar.gz", "entrypoint": "tokenbrief-executa" },
+          "linux-aarch64": { "path": "release/tokenbrief-executa-{version}-linux-aarch64.tar.gz", "entrypoint": "tokenbrief-executa" },
+          "darwin-arm64": { "path": "release/tokenbrief-executa-{version}-darwin-arm64.tar.gz", "entrypoint": "tokenbrief-executa" },
+          "darwin-x86_64": { "path": "release/tokenbrief-executa-{version}-darwin-x86_64.tar.gz", "entrypoint": "tokenbrief-executa" },
+          "windows-x86_64": { "path": "release/tokenbrief-executa-{version}-windows-x86_64.zip", "entrypoint": "tokenbrief-executa.exe" }
+        }
+      },
+      "npm": {
+        "type": "npm",
+        "package_name": "@meitipro1/tokenbrief-executa",
+        "executable_name": "tokenbrief-executa",
+        "supports_protocol": true
+      },
+      "local": {
+        "type": "local",
+        "executable_name": "tokenbrief-executa",
+        "supports_protocol": true
+      }
+    }
+  },
+
+  "_comment": "Publish metadata (slug/name/version/executa_type) is read by `anna-app apps publish` / `executa publish`; dev fields (tool_id/type/command/enabled) by `anna-app dev`. The minted production tool_id never goes in this file: app.json#bundled_executas maps the handle `tokenbrief` here, and publish substitutes the minted id into every `bundled:tokenbrief` ref and writes bundle/anna-tool-ids.js. Binary artifacts are built by `pnpm --filter @meitipro1/tokenbrief-executa package:binaries` and uploaded directly at `apps cut` (binary_artifacts track). The npm profile is the alternative if a public npm package is preferred."
+}

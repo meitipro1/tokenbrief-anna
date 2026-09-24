@@ -1,6 +1,16 @@
 {
-  "name": "tokenbrief",
-  "tagline": "TODO",
-  "description": "TODO",
-  "category": "productivity"
+  "slug": "tokenbrief",
+  "name": "TokenBrief",
+  "version": "0.1.0",
+  "tagline": "Paste a ticker, contract or link — get a live, sourced brief with risk flags. English and Persian.",
+  "description": "TokenBrief answers the question every crypto group asks ten times a day: \"what is this token?\"\n\nPrimary function: generate a token brief — identity, live key numbers, risk flags, narrative and share text — from a ticker, contract address, or CoinMarketCap/CoinGecko/DexScreener URL.\n\nPaste a ticker (PEPE), a contract address (0x… or a Solana mint), or a CoinGecko, CoinMarketCap or DexScreener link. In a few seconds you get one structured brief:\n\n- **Key numbers** — price, 24h change, market cap and FDV, 24h volume, DEX liquidity, market-cap rank and how long the token has been listed. Each number shows its source and fetch time.\n- **Risk flags** — rule-based checks on free data: fresh pair, low liquidity, liquidity thin versus market cap, twin tickers (same symbol, different token), large FDV gap, missing verified socials, single pool, price spike, volume anomaly, and a honeypot hint when there are buys but no sells. Tap \"Why?\" on any flag to see the rule and the exact numbers behind it.\n- **What it is, narrative snapshot and 5 questions to ask before buying** — written by the AI around the numbers.\n- **Share card** — one tap copies a clean summary for X or Telegram.\n- **Persian** — one tap switches the brief to Persian (فارسی); numbers stay in Latin digits so they match the sources.\n- **Follow-up questions** about the brief, answered from the same data.\n\nEvery number comes from the CoinGecko and DexScreener public APIs at run time. The AI only writes the words around the numbers and never invents figures; a validator rejects any number it types. No API keys, no wallet, no sign-up beyond your Anna account.\n\nPrivacy: TokenBrief stores only your recent briefs and your language preference in Anna storage. No personal data, no tracking.\n\nTokenBrief is a research aid, not financial advice. Holder counts are not shown (no free source).\n\nSupport: Telegram @meitipro",
+  "category": "data",
+  "homepage_url": "https://tokenbrief-anna.vercel.app",
+  "support_url": "https://t.me/meitipro",
+  "privacy_url": "https://tokenbrief-anna.vercel.app/privacy",
+
+  "_comment_bundled_executas": "`anna-app apps publish` publishes each bundled executa first, then substitutes its server-minted tool_id into every `bundled:<handle>` ref in manifest.json (in memory — the file on disk is never mutated) and writes bundle/anna-tool-ids.js, which the UI reads as window.__ANNA_TOOL_IDS__.tokenbrief. `anna-app dev` does the same with the local dev tool_id.",
+  "bundled_executas": {
+    "tokenbrief": { "path": "./executas/tokenbrief" }
+  }
 }

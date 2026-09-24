@@ -1,11 +1,29 @@
 {
   "schema": 2,
+  "permissions": [
+    "tools.invoke",
+    "llm.complete",
+    "storage.read",
+    "storage.write"
+  ],
   "required_executas": [
     {
-      "tool_id": "tool-dev-tokenbrief"
+      "tool_id": "bundled:tokenbrief"
     }
   ],
-  "tags": ["tokenbrief"],
+  "optional_executas": [],
+  "host_capabilities": [
+    "aps.kv"
+  ],
+  "tags": [
+    "crypto",
+    "tokens",
+    "research",
+    "defi",
+    "persian"
+  ],
+  "system_prompt_addendum": "You have the TokenBrief tools. When the user asks about a coin or token (a ticker, a contract address, or a CoinGecko, CoinMarketCap or DexScreener link), call resolve_token with exactly what they typed. If status is \"ambiguous\", list the candidates (name, symbol, market cap, rank), ask which one they mean, then call resolve_token again with https://www.coingecko.com/en/coins/<cgId> of their pick. If status is \"not_found\", say so and suggest pasting the contract address. When resolved, call fetch_metrics (cgId, chain = primaryChain, address = primaryAddress, symbol) and, if primaryAddress is present, fetch_pairs (chain, address); then call risk_flags with both results. Answer with the numbers and flags exactly as returned and name the source of each number. Never state a number, ranking or date you did not receive from a tool. Never give buy or sell advice. Offer open_app_view('main') for the full brief with share text and Persian.",
+  "user_message_prefix_template": "[TokenBrief] {user_message}",
   "ui": {
     "bundle": {
       "format": "static-spa",
@@ -15,22 +33,48 @@
     "views": [
       {
         "name": "main",
-        "title": "tokenbrief",
+        "title": "TokenBrief",
         "default": true,
-        "default_size": { "w": 480, "h": 360 },
-        "min_size": { "w": 320, "h": 240 }
+        "entry": "index.html",
+        "default_size": {
+          "w": 900,
+          "h": 680
+        },
+        "min_size": {
+          "w": 360,
+          "h": 480
+        },
+        "resizable": true,
+        "movable": true,
+        "single_instance": true
       }
     ],
     "host_api": {
-      "tools": ["tool-dev-tokenbrief"],
-      "storage": ["get", "set"],
-      "window": ["set_title", "ready"]
+      "tools": [
+        "required:bundled:tokenbrief"
+      ],
+      "llm": [
+        "complete"
+      ],
+      "storage": [
+        "get",
+        "set"
+      ],
+      "window": [
+        "set_title"
+      ]
     },
     "csp_overrides": {},
-    "state_merge": "last_writer_wins"
+    "state_merge": "last_writer_wins",
+    "form_factors": [
+      "desktop",
+      "mobile"
+    ]
   },
   "dev": {
-    "fixtures": ["fixtures/*.jsonl"],
+    "fixtures": [
+      "fixtures/*.jsonl"
+    ],
     "seed_storage": {},
     "user_id": 1
   }

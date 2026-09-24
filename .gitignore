@@ -1,0 +1,14 @@
+node_modules/
+.env
+.env.local
+ui/.env.local
+bundle/
+executas/*/dist/
+executas/*/release/
+evidence/*
+!evidence/README.md
+docs/accounts.md
+.anna/
+screenshots/tmp/
+*.log
+.vercel

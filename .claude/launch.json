@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "anna-harness-mock",
+      "runtimeExecutable": "anna-app",
+      "runtimeArgs": ["dev", "--port", "5180", "--user-id", "1", "--bundle", "bundle", "--mock-llm", "fixtures/llm/replies.jsonl"],
+      "port": 5180
+    },
+    {
+      "name": "ui-vite-dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "ui", "dev", "--port", "5173", "--strictPort"],
+      "port": 5173
+    }
+  ]
+}
