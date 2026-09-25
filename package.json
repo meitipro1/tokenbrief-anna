@@ -16,6 +16,7 @@
     "validate": "anna-app validate --bundle bundle --strict",
     "release:check": "tsx scripts/release-check.ts",
     "release:verify": "tsx scripts/release-verify.ts",
+    "store:submit": "tsx scripts/store-submit.ts",
     "log:post": "tsx scripts/log-post.ts",
     "checkpoint": "tsx scripts/checkpoint.ts"
   },

@@ -4,6 +4,11 @@ Everything up to here runs locally. Every step below needs your Anna account, so
 paste the outputs back into this file (or into the Claude session) so the next step can be
 checked. Commands are from `anna-app <cmd> --help` (CLI 0.1.53) and apps/app-publish.md.
 
+**Shortcut:** after §0 (login) and §1 (real-LLM check), `pnpm store:submit` walks §2–§7 for
+you: it runs the local gates and the dry run by itself, rebuilds stale binaries if you agree,
+shows every command that changes something on Anna and runs it only after you type `y`, and
+pauses for the Console checks. Output is also logged to `docs/notes/s4-run.log`.
+
 Target: **PENDING_REVIEW on Sat 26 Sep** (roadmap §8.1). Review budget: 5 submissions/day —
 do not burn it on typo fixes; `apps push` to the draft and cut once.
 
@@ -83,12 +88,14 @@ description/category/urls from `app.json`. Record the minted tool_id and the app
 - tool_id: `…`
 - app id / slug: `@meitipro1/tokenbrief`
 
-## 4. Listing tab (Console) — things the CLI does not upload
+## 4. Listing tab (Console) — check what the CLI uploaded
 
-- Logo: **Upload logo** → `content/brand/logo-512.png` (≤ 2 MB).
-- Screenshots (max 6 URLs, one per line): after the landing page is deployed, the URLs under
-  `https://tokenbrief-anna.vercel.app/shots/…` (see `content/listing.md`).
-- Check category = `data`, homepage/support/privacy URLs.
+`apps push` / `apps sync-meta` now upload the listing images from `app.json` (CLI 0.1.53
+`listing-meta`: local paths go to the Anna CDN, http(s) URLs are forwarded as is):
+`logo_file` = `content/brand/logo-512.png`, `screenshots` = the five `landing/shots/0[1-5]-*.png`,
+`cover_url` = the landing page's cover. In the Console only check that they show, that the
+category is `data`, and the homepage/support/privacy URLs. If an image is missing, upload it
+there by hand (logo ≤ 2 MB; screenshots max 6).
 
 ## 5. Cut the version (uploads the binaries, freezes the executa binding)
 

@@ -11,7 +11,7 @@ source) or "honeypot detection" (only a no-sells hint; no contract simulation).
 | Tagline (≤ 160) | Paste a ticker, contract or link — get a live, sourced brief with risk flags. English and Persian. |
 | Logo | `content/brand/logo-512.png` → **Upload logo** (stored as 256×256 WebP) |
 | Cover | `https://tokenbrief-anna.vercel.app/brand/cover-1600x900.png` |
-| Screenshots (≤ 6) | `https://tokenbrief-anna.vercel.app/shots/01-desktop-brief.png`, `…/02-desktop-flags.png`, `…/03-desktop-share.png`, `…/04-mobile-brief.png`, `…/05-mobile-persian.png` |
+| Screenshots (≤ 6) | uploaded from `app.json#screenshots` by `apps push`/`sync-meta`: `landing/shots/01-desktop-brief.png`, `02-desktop-flags.png`, `03-desktop-share.png`, `04-mobile-brief.png`, `05-mobile-persian.png` (also live at `https://tokenbrief-anna.vercel.app/shots/…`) |
 | Homepage | https://tokenbrief-anna.vercel.app |
 | Support | https://t.me/meitipro |
 | Privacy | https://tokenbrief-anna.vercel.app/privacy |

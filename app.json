@@ -8,6 +8,16 @@
   "homepage_url": "https://tokenbrief-anna.vercel.app",
   "support_url": "https://t.me/meitipro",
   "privacy_url": "https://tokenbrief-anna.vercel.app/privacy",
+  "logo_file": "content/brand/logo-512.png",
+  "cover_url": "https://tokenbrief-anna.vercel.app/brand/cover-1600x900.png",
+  "screenshots": [
+    "landing/shots/01-desktop-brief.png",
+    "landing/shots/02-desktop-flags.png",
+    "landing/shots/03-desktop-share.png",
+    "landing/shots/04-mobile-brief.png",
+    "landing/shots/05-mobile-persian.png"
+  ],
+  "_comment_listing_assets": "`anna-app apps push` / `apps sync-meta` upload logo_file and the local screenshots to the Anna CDN (CLI listing-meta: local paths are uploaded, http(s) URLs are forwarded); cover_url must be a URL.",
 
   "_comment_bundled_executas": "`anna-app apps publish` publishes each bundled executa first, then substitutes its server-minted tool_id into every `bundled:<handle>` ref in manifest.json (in memory — the file on disk is never mutated) and writes bundle/anna-tool-ids.js, which the UI reads as window.__ANNA_TOOL_IDS__.tokenbrief. `anna-app dev` does the same with the local dev tool_id.",
   "bundled_executas": {
