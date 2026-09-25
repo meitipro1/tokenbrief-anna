@@ -37,6 +37,14 @@ fetched 2026-09-24), in the `@anna-ai/cli` 0.1.53 source/help, or observed in `a
 - Resolution order on the Agent: exact platform → same OS any arch → wildcard → single entry.
 - Executas run on the user's Anna Agent: their own machine or a managed Cloud Agent (Linux
   microVM) (reference/executa-cloud-storage.md). No agent online → `agent_unavailable`.
+- Our Linux binaries (@yao-pkg/pkg, node22 base) are dynamically linked like the official
+  Node 22 build: `/lib64/ld-linux-x86-64.so.2` (aarch64: `/lib/ld-linux-aarch64.so.1`), newest
+  symbol versions `GLIBC_2.28` and `GLIBCXX_3.4.21` (measured 2026-09-25; `pnpm release:verify`
+  prints it). So a glibc distro ≥ 2.28 with libstdc++ (Debian 10+, Ubuntu 20.04+, RHEL 8+,
+  Amazon Linux 2023), not musl/Alpine. The Cloud Agent's distro is not documented [VERIFY —
+  asked in docs/discord-questions.md #7]; `pkg --targets node22-alpine-x64` is the fallback.
+- `anna-app doctor` on Windows reports `dev.key mode 666 (expected 0600)`: Windows has no POSIX
+  modes, the check cannot pass there, and `anna-app dev` works regardless.
 
 ## Executa protocol (reference/executa-protocol.md)
 

@@ -75,6 +75,13 @@ const FORMAT: Record<string, [string, (b: Buffer) => boolean]> = {
   "darwin-arm64": ["Mach-O arm64", (b) => macho(b, 0x0100000c)],
   "windows-x86_64": ["PE x86-64", (b) => pe(b, 0x8664)],
 };
+/** Linux binaries link glibc dynamically: the newest GLIBC_x.y symbol version they need. */
+function glibc(b: Buffer): string {
+  const v = [...b.toString("latin1").matchAll(/GLIBC_2\.(\d+)(?:\.\d+)?\0/g)]
+    .map((m) => Number(m[1])).sort((x, y) => x - y).pop();
+  return v === undefined ? "" : ` (needs glibc >= 2.${v})`;
+}
+
 const HOST = ({ "win32-x64": "windows-x86_64", "linux-x64": "linux-x86_64",
   "linux-arm64": "linux-aarch64", "darwin-x64": "darwin-x86_64" } as Record<string, string>)[
   `${process.platform}-${process.arch}`];
@@ -130,7 +137,7 @@ for (const [platform, a] of Object.entries(artifacts)) {
     if (!exe.includes(plugin)) problems.push("STALE: built from older source");
     if (!problems.length && platform === HOST) note = runOnHost(exe, a.entrypoint);
     if (note.startsWith("FAILED")) problems.push(note);
-    note ||= `${label}, current code`;
+    note ||= `${label}${platform.startsWith("linux") ? glibc(exe) : ""}, current code`;
   }
   bad += problems.length ? 1 : 0;
   console.log(`${problems.length ? "✗" : "✓"} ${platform.padEnd(15)} ` +

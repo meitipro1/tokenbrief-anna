@@ -28,9 +28,11 @@ Founding Builder Program and have a few questions before I invest in growth:
 5. Which time zone defines the "calendar month" for MAU?
 6. If store review is still pending on 30 Sep, is it fine to submit the DoraHacks BUIDL
    with the pending App link and update it after approval?
-7. When an app's executa runs on a Linux Cloud Agent, does each user's agent get its own
-   egress IP, or do many agents share one? TokenBrief calls the keyless CoinGecko API, which
-   allows about 5 requests a minute per IP, so a shared IP would split that budget between
-   all users.
+7. Two questions about Linux Cloud Agents. (a) Does each user's agent get its own egress IP,
+   or do many agents share one? TokenBrief calls the keyless CoinGecko API, which allows about
+   5 requests a minute per IP, so a shared IP would split that budget between all users.
+   (b) Which distribution/libc does the microVM run? Our `binary_artifacts` Linux build is a
+   self-contained Node 22 executable that needs glibc ≥ 2.28 and libstdc++ (like the official
+   Node 22 binary); if the agent is musl/Alpine-based we will ship a musl build instead.
 
 Thanks — will share the app link here once it's live.
