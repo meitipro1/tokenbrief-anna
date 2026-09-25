@@ -88,6 +88,12 @@ pnpm release:check                  # + typecheck, anna-app validate --strict, b
 pnpm release:verify                 # the Executa binaries embed the current code (gate before apps cut)
 ```
 
+## Publish
+
+After `anna-app login --host https://nexus.anna.partners`, `pnpm store:submit` walks the store
+submission (docs/notes/s4-publish.md): local gates and a dry run first, then push, sync-meta,
+cut and submit-review, each only after you confirm.
+
 ## Repository layout
 
 ```text
