@@ -6,6 +6,7 @@
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { chromium, type Frame, type Page } from "playwright";
+import { persianForMockTranslation } from "./lib/mock-persian";
 
 const arg = (k: string, d: string) => {
   const i = process.argv.indexOf(`--${k}`);
@@ -71,6 +72,7 @@ try {
   // Mobile: the harness mobile shell at 3×.
   const mob = await browser.newPage({ viewport: { width: 1000, height: 1000 },
     deviceScaleFactor: 3 });
+  await persianForMockTranslation(mob); // the Persian shot must show Persian prose
   await appFrame(mob);
   f = await formFactor(mob, "Mobile");
   await brief(f, "https://dexscreener.com/solana/EP2ib6dYdEeqD8MfE2ezHCxX3kP3K2eLKkirfPm5eyMx");

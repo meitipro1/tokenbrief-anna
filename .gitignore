@@ -10,6 +10,7 @@ evidence/*
 docs/accounts.md
 .anna/
 screenshots/tmp/
+screenshots/demo/
 *.log
 .vercel
 release/

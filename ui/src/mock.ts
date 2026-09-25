@@ -4,6 +4,7 @@
 // never reaches bundle/.
 import type { AnnaClient, LlmArgs } from "./anna";
 import { ToolError } from "./anna";
+import FA_REPLY from "../../fixtures/llm/translate-fa.json?raw";
 
 type Rec = { tool: string; arguments: Record<string, unknown>;
   result: { success?: boolean; data?: unknown; error?: unknown } };
@@ -22,7 +23,8 @@ const LLM_EN = JSON.stringify({
   risk_commentary: "Review each automated flag above; the listing age is {F7} and DEX " +
     "liquidity across the top pairs is {F6}.",
   questions: [
-    "Why is the FDV {F4} compared with a market cap of {F3}?",
+    "Is any supply still to be unlocked, or is the FDV of {F4} already close to the " +
+      "market cap of {F3}?",
     "Is the DEX liquidity of {F6} enough for the size you have in mind?",
     "Who holds most of the supply, given that holder data is not available here?",
     "Are the official website and X account the ones linked on CoinGecko?",
@@ -32,21 +34,8 @@ const LLM_EN = JSON.stringify({
   confidence: "medium",
 });
 
-const LLM_FA = JSON.stringify({
-  what: "این توکن در CoinGecko توضیح داده شده است؛ قیمت آن {F1} است و در 24h تغییر {F2} داشته است.",
-  narrative: "رتبهٔ ارزش بازار آن {F8} است، با ارزش بازار {F3} و حجم 24h برابر {F5}.",
-  risk_commentary: "هر پرچم خودکار بالا را بررسی کنید؛ مدت فهرست‌شدن {F7} و نقدینگی DEX در " +
-    "جفت‌های اصلی {F6} است.",
-  questions: [
-    "چرا ارزش کاملاً رقیق‌شده {F4} در مقابل ارزش بازار {F3} است؟",
-    "آیا نقدینگی {F6} برای اندازهٔ معاملهٔ شما کافی است؟",
-    "با توجه به نبودِ دادهٔ دارندگان، بیشتر عرضه دست چه کسی است؟",
-    "آیا وب‌سایت و حساب X رسمی همان‌هایی هستند که در CoinGecko آمده‌اند؟",
-    "چه چیزی باعث تغییر {F2} در 24h شد؟",
-  ],
-  share: "قیمت {F1} ({F2} در 24h) · ارزش بازار {F3} · نقدینگی {F6}",
-  confidence: "medium",
-});
+// The canned Persian translation, shared with the recording scripts (scripts/lib/mock-persian.ts)
+const LLM_FA = JSON.stringify(JSON.parse(FA_REPLY));
 
 const store = new Map<string, unknown>();
 

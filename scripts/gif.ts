@@ -11,6 +11,7 @@ import { join } from "node:path";
 import gifenc from "gifenc";
 import { chromium } from "playwright";
 import { PNG } from "pngjs";
+import { persianForMockTranslation } from "./lib/mock-persian";
 
 const i = process.argv.indexOf("--ffmpeg");
 const pwDir = join(process.env.LOCALAPPDATA ?? join(homedir(), ".cache"), "ms-playwright");
@@ -25,9 +26,14 @@ const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 960, height: 760 },
   recordVideo: { dir: TMP, size: { width: 960, height: 760 } } });
 const page = await ctx.newPage();
+await persianForMockTranslation(page);
 await page.goto("http://localhost:5180", { waitUntil: "networkidle" });
 const frame = (await (await page.waitForSelector("iframe")).contentFrame())!;
 await frame.waitForSelector("text=TokenBrief");
+// Only the app in frame: no harness chrome (or its local dev URL) in a public GIF.
+await page.addStyleTag({ content: "#app{position:fixed!important;inset:0!important;" +
+  "width:100vw!important;height:100vh!important;border:0!important;" +
+  "z-index:2147483000!important}" });
 await page.waitForTimeout(600);
 const input = frame.locator("input").first();
 await input.pressSequentially("PEPE", { delay: 120 });
