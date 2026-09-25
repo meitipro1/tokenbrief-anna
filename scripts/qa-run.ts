@@ -3,7 +3,7 @@
 // flags, notices and the mobile layout checks into docs/qa-results.md.
 //   anna-app dev --bundle bundle [--mock-llm fixtures/llm/replies.jsonl]   # other terminal
 //   pnpm tsx scripts/qa-run.ts [--fresh <solana|base>:<address>] [--only desktop|mobile]
-import { writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { chromium, type Frame, type Page } from "playwright";
 
 const arg = (k: string) => {
@@ -57,15 +57,16 @@ async function run(frame: Frame, input: string): Promise<Omit<Result, "id" | "in
     return { outcome: busy ? "SPINNER (bad)" : "no-op (button disabled)", ms: 0, token: "",
       flags: "", notice: "" };
   }
+  const wait = { timeout: 200_000 }; // covers a full CoinGecko Retry-After countdown
   const which = await Promise.race([
-    frame.waitForSelector("text=/5 questions|۵ سؤال/", { timeout: 120_000 }).then(() => "brief"),
-    frame.waitForSelector("text=/pick one/", { timeout: 120_000 }).then(() => "picker"),
-    frame.waitForSelector("[role=alert]", { timeout: 120_000 }).then(() => "error"),
+    frame.waitForSelector("text=/5 questions|۵ سؤال/", wait).then(() => "brief"),
+    frame.waitForSelector("text=/pick one/", wait).then(() => "picker"),
+    frame.waitForSelector("[role=alert]", wait).then(() => "error"),
   ]).catch(() => "timeout");
   const ms = Date.now() - t0;
   if (which === "error") {
-    return { outcome: `error: ${(await frame.locator("[role=alert] p").first().innerText()).trim()}`,
-      ms, token: "", flags: "", notice: "" };
+    const text = (await frame.locator("[role=alert] p").first().innerText()).trim();
+    return { outcome: `error: ${text}`, ms, token: "", flags: "", notice: "" };
   }
   if (which === "picker") {
     const rows = await frame.locator("section ul li button").allInnerTexts();
@@ -76,11 +77,25 @@ async function run(frame: Frame, input: string): Promise<Omit<Result, "id" | "in
   const token = (await frame.locator("article h2").first().innerText()).replace(/\s+/g, " ");
   const chain = await frame.locator("article span.rounded-full").first().innerText()
     .catch(() => "");
-  const flags = (await frame.locator("article li span.font-mono").allInnerTexts()).join(", ");
-  const notice = await frame.locator("article .bg-\\[var\\(--warn-bg\\)\\] span").first()
+  // each flag row shows a severity badge then the code, both font-mono → "CODE:severity"
+  const flags = (await frame.locator("article li").evaluateAll((lis) => lis.map((li) => {
+    const [sev, code] = [...li.querySelectorAll("span.font-mono")]
+      .map((e) => (e.textContent ?? "").trim());
+    return code ? `${code}:${sev.toLowerCase()}` : "";
+  }).filter(Boolean))).join(", ");
+  // brief-level notices are divs directly under <article>; flag rows (li) share the colour
+  const notice = await frame.locator("article > div.bg-\\[var\\(--warn-bg\\)\\] > span").first()
     .innerText({ timeout: 500 }).catch(() => "");
   return { outcome: "brief", ms, token: `${token}${chain ? ` · ${chain}` : ""}`,
     flags: flags || "none", notice };
+}
+
+// The harness' Mobile shell is 390 px wide; the roadmap asks for 320 px too, so the iframe is
+// narrowed in place and measured again.
+async function narrow(page: Page, frame: Frame, width: number): Promise<string> {
+  await page.$eval("iframe", (f, w) => { (f as HTMLElement).style.width = `${w}px`; }, width);
+  await page.waitForTimeout(300);
+  return layout(frame);
 }
 
 async function layout(frame: Frame): Promise<string> {
@@ -109,7 +124,8 @@ try {
       if (!input && id !== "12d") continue;
       const frame = await open(page, mode === "mobile");
       const r = await run(frame, input);
-      const l = mode === "mobile" ? await layout(frame) : "";
+      const l = mode === "mobile"
+        ? `${await layout(frame)} · ${await narrow(page, frame, 320)}` : "";
       results[mode].push({ id, input, ...r, layout: l });
       console.log(`${mode} ${id} ${input.slice(0, 40)} → ${r.outcome} ${r.ms} ms ${r.token} ` +
         `[${r.flags}] ${r.notice}`);
@@ -125,12 +141,11 @@ try {
 
 const esc = (s: string) => s.replace(/\|/g, "\\|").replace(/\n/g, " ");
 const short = (s: string) => (s.length > 46 ? `${s.slice(0, 22)}…${s.slice(-16)}` : s);
-let md = `# QA results — ${new Date().toISOString().slice(0, 16).replace("T", " ")} UTC\n\n` +
-  `Driven through \`anna-app dev\` by \`scripts/qa-run.ts\` (§11.7 rows). LLM: whatever the ` +
-  `harness was started with (mock unless noted), so prose is not assessed here — numbers, ` +
-  `resolution, flags, errors, timing and layout are.\n`;
+const stamp = `${new Date().toISOString().slice(0, 16).replace("T", " ")} UTC`;
+const sections: Record<string, string> = {};
 for (const [mode, rows] of Object.entries(results)) {
-  md += `\n## ${mode}\n\n| # | Input | Outcome | Time | Resolved | Flags | Notice |` +
+  let md = `\n## ${mode} — ${stamp}\n\n` +
+    `| # | Input | Outcome | Time | Resolved | Flags | Notice |` +
     `${mode === "mobile" ? " Layout |" : ""}\n|---|---|---|---|---|---|---|` +
     `${mode === "mobile" ? "---|" : ""}\n`;
   for (const r of rows) {
@@ -138,6 +153,18 @@ for (const [mode, rows] of Object.entries(results)) {
       `${r.ms ? `${(r.ms / 1000).toFixed(1)} s` : "—"} | ${esc(r.token)} | ${esc(r.flags)} | ` +
       `${esc(r.notice)} |${mode === "mobile" ? ` ${r.layout} |` : ""}\n`;
   }
+  sections[mode] = md;
 }
-writeFileSync("docs/qa-results.md", md);
+const OUT = "docs/qa-results.md";
+const prev = only && existsSync(OUT) ? readFileSync(OUT, "utf8") : "";
+const own = new RegExp(`\\n## ${only}\\b[^\\n]*\\n[\\s\\S]*?(?=\\n## |$)`);
+const md = only && own.test(prev)
+  ? prev.replace(own, () => sections[only]) // a function: "$" in token names stays literal
+  : `# QA results — ${stamp}\n\n` +
+    `Driven through \`anna-app dev\` by \`scripts/qa-run.ts\` (§11.7 rows). LLM: whatever the ` +
+    `harness was started with (mock unless noted), so prose is not assessed here — numbers, ` +
+    `resolution, flags, errors, timing and layout are. Mobile layout is measured in the ` +
+    `harness' 390 px shell and again with the iframe narrowed to 320 px.\n` +
+    Object.values(sections).join("");
+writeFileSync(OUT, md);
 console.log("\nwrote docs/qa-results.md");
