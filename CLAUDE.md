@@ -14,6 +14,7 @@ Never contradict any of them without updating them in the same commit.
 - pnpm test                          # vitest in both packages (executa builds first)
 - pnpm smoke -- <query>              # scripts/smoke.ts: the 4 tools over real JSON-RPC, live APIs
 - pnpm release:check                 # build + typecheck + tests + validate --strict + bundle rules
+- pnpm release:verify                # binaries in release/ embed the current dist/plugin.cjs
 - anna-app validate --bundle bundle --strict
 - LLM_MODE=mock pnpm dev             # harness at http://localhost:5180 (mock LLM)
 - anna-app dev --bundle bundle       # real llm.complete when logged in (spends quota)

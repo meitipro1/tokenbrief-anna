@@ -44,7 +44,16 @@ pnpm --filter @meitipro1/tokenbrief-executa package:binaries -- linux-x86_64 lin
 ```
 
 Produces `executas/tokenbrief/release/tokenbrief-executa-0.1.0-<platform>.{tar.gz,zip}` —
-exactly the `binary_artifacts` paths in `executas/tokenbrief/executa.json`.
+exactly the `binary_artifacts` paths in `executas/tokenbrief/executa.json`. Then:
+
+```bash
+pnpm release:verify
+```
+
+It checks every archive holds the right executable format (ELF / Mach-O / PE) and embeds the
+current `dist/plugin.cjs` byte for byte, and runs the Windows binary over stdio (describe,
+health, invalid query, unknown method). A binary built before the last code change shows
+`STALE` and the command fails — rebuild, never cut with it.
 
 ## 3. Dry run, then push the working draft
 
@@ -72,6 +81,7 @@ description/category/urls from `app.json`. Record the minted tool_id and the app
 ## 5. Cut the version (uploads the binaries, freezes the executa binding)
 
 ```bash
+pnpm release:verify
 anna-app apps cut 0.1.0 --changelog "MVP: token brief from ticker, address or CG/CMC/DexScreener link; risk flags; Persian; share card"
 anna-app apps status tokenbrief --json
 anna-app apps versions tokenbrief --json

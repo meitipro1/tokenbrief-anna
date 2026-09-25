@@ -65,4 +65,9 @@ const manifest = readFileSync("manifest.json", "utf8");
 if (/tool-dev-|tool-meitipro1-/.test(manifest)) fail("manifest.json contains a raw tool id");
 if (!existsSync("executas/tokenbrief/dist/plugin.js")) fail("executa not built");
 
-console.log(`\n✓ release:check passed — ${files.length} bundle files, ${(total / 1024).toFixed(0)} KiB`);
+console.log(`\n✓ release:check passed — ${files.length} bundle files, ` +
+  `${(total / 1024).toFixed(0)} KiB`);
+
+// 4. Executa binaries (uploaded by `apps cut`, not by push): report stale or missing archives
+// now; `pnpm release:verify` is the hard gate right before the cut.
+run("tsx scripts/release-verify.ts --warn");

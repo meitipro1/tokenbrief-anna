@@ -85,6 +85,7 @@ pnpm test                           # risk table, http layer + rate budget, reso
 pnpm tsx scripts/qa-run.ts          # §11.7 QA rows through the anna-app dev harness → docs/qa-results.md
 bash scripts/record-fixtures.sh     # re-record the live fixtures (spaced for CoinGecko's budget)
 pnpm release:check                  # + typecheck, anna-app validate --strict, bundle rules
+pnpm release:verify                 # the Executa binaries embed the current code (gate before apps cut)
 ```
 
 ## Repository layout
