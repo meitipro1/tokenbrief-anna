@@ -26,7 +26,7 @@ source), and the app does store your recent briefs and language preference (Anna
 | Tags | anna, ai-app, crypto-research, token-analysis, persian |
 | GitHub | https://github.com/meitipro1/tokenbrief-anna |
 | Website | https://tokenbrief-anna.vercel.app |
-| Demo video | the 45-second recording (content/launch/tutorial-60s.md shot list), uploaded to X or YouTube |
+| Demo video | the ~60-second recording made by `pnpm tsx scripts/demo-video.ts` from the real-LLM harness (shot list: content/launch/tutorial-60s.md), uploaded to YouTube (unlisted is fine) |
 | Logo / cover | content/brand/logo-1024.png · content/brand/cover-1600x900.png |
 
 ### Description

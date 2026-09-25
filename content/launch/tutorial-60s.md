@@ -13,3 +13,9 @@
 
 Checklist: recorded from the current build · real data with the timestamp visible · no token you
 hold · captions readable muted.
+
+Recording: `scripts/demo-video.ts` plays this shot list against the running harness and burns
+in the captions above (read from this table), then writes
+`screenshots/demo/tokenbrief-demo-<date>.webm` (1280×720; YouTube takes WebM, X needs MP4).
+Record it with the real model (`anna-app dev --bundle bundle` while logged in): with
+`--mock-llm` the prose is canned, the follow-up shot is skipped and the script says so.

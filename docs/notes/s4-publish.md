@@ -37,6 +37,18 @@ Open http://localhost:5180 and run: `PEPE`, `ARB`, a fresh Solana pair from dexs
 did validation pass first try (browser console shows `llm output failed validation: …` when not),
 `usage.totalTokens` (RPC log), and whether the prose numbers match the numbers table.
 
+While this real-LLM harness is running, record the DoraHacks demo video in a second terminal
+(about a minute; it spends a few more briefs of quota):
+
+```bash
+pnpm tsx scripts/demo-video.ts
+```
+
+Output: `screenshots/demo/tokenbrief-demo-<date>.webm` → YouTube → the BUIDL's Demo video field.
+Optionally re-shoot the store screenshots and the landing GIF with the real model too
+(`pnpm tsx scripts/screenshots.ts --out landing/shots`, `pnpm tsx scripts/gif.ts`), then
+redeploy the landing page.
+
 ## 2. Build the Executa binaries
 
 ```bash
