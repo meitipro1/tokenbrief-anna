@@ -22,6 +22,12 @@ Inputs: ticker (`PEPE`, `$pepe`), EVM address (`0x…`), Solana mint, CoinGecko 
 CoinMarketCap currency URL, DexScreener pair URL. When several coins share a ticker and none
 dominates by market cap, a picker lists them.
 
+Tickers are resolved through CoinGecko only — never by "the deepest DexScreener pool", because
+DexScreener search is full of clones with fake liquidity (a days-old Solana "Arbitrum" showed
+$207M). Keyless CoinGecko allows about 5 requests a minute, so when it is busy the app counts
+down the wait CoinGecko asks for and retries; contract addresses and DexScreener links work
+without it.
+
 ## The one rule: numbers never come from the model
 
 The Executa returns every number with its source and fetch time. The UI sends the model a FACTS
@@ -72,9 +78,12 @@ pnpm --filter ui dev                # UI alone with recorded data (no Anna host)
 ## Tests
 
 ```bash
-pnpm test                           # risk table, http layer, resolver, metrics, stdio protocol,
-                                    # 10 recorded live chains replayed offline, validator,
-                                    # substitution, share card, mountBundle ACL tests
+pnpm test                           # risk table, http layer + rate budget, resolver, metrics,
+                                    # stdio protocol, 11 recorded live chains replayed offline
+                                    # (incl. a fresh Solana pair), validator, substitution,
+                                    # share card, rate-limit countdown, mountBundle ACL tests
+pnpm tsx scripts/qa-run.ts          # §11.7 QA rows through the anna-app dev harness → docs/qa-results.md
+bash scripts/record-fixtures.sh     # re-record the live fixtures (spaced for CoinGecko's budget)
 pnpm release:check                  # + typecheck, anna-app validate --strict, bundle rules
 ```
 

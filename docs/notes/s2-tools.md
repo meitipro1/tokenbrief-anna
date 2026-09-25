@@ -17,12 +17,17 @@ Recorded with `TOKENBRIEF_EVIDENCE=1 TOKENBRIEF_EVIDENCE_DIR=evidence/<name> pnp
 | wif | `WIF` | resolved `dogwifcoin` on solana |
 | wif-dex-url | dexscreener.com/solana/EP2i…eyMx | pair → base token EKpQ…zcjm → `dogwifcoin` |
 | not-found | `NOTATOKEN123` | `not_found` (CoinGecko search empty), success:true |
+| robin-fresh | dexscreener.com/solana/daxv…v1qm (lowercase, as users paste it) | ROBIN, pools hours old: FRESH_PAIR:high, LOW_LIQUIDITY:high, NO_VERIFIED_SOCIALS:high, TWIN_TICKER, PRICE_SPIKE, NO_CG_LISTING (404 confirmed), SELF_REPORTED_SOCIALS |
+
+All fixtures were re-recorded on 2026-09-25 after the D-16…D-22 changes: PEPE now gives the
+same brief (incl. TWIN_TICKER) whether pasted as a ticker, an address, a CoinGecko link or a
+CMC link. 404 responses are recorded too, so replays see "not listed" the way the live run did.
 
 Endpoint facts seen:
 
 - CoinGecko keyless `/search`, `/coins/markets`, `/coins/{id}`, `/coins/{platform}/contract/{addr}`
-  all answered 200; bursts across back-to-back processes produced 429s with a long
-  `Retry-After` (the limiter then fails fast with UPSTREAM_RATE_LIMITED).
+  all answered 200. Measured budget: ~5 origin requests per minute per IP — the 6th returns 429
+  with `Retry-After` counting down to the window end; Cloudflare `HIT`s do not count (D-17).
   `genesis_date` is null for PEPE → listing age derived from the oldest pair (2023-04-14).
 - DexScreener `/token-pairs/v1/{chain}/{addr}` returns a **bare array** (≤ 30 pools) including
   pools where the token is only the quote; `/latest/dex/search` and `/latest/dex/pairs/…` wrap
