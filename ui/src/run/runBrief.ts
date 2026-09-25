@@ -11,7 +11,7 @@ import type { Brief, Candidate, Metrics, PairsResult, ResolvedToken, RiskFlag } 
 export type Step = "resolving" | "fetching" | "flagging" | "synthesizing";
 export type RunError =
   | "INPUT_INVALID" | "NOT_FOUND" | "UPSTREAM_DOWN" | "UPSTREAM_RATE_LIMITED"
-  | "TOOL_NOT_GRANTED" | "AGENT_UNAVAILABLE";
+  | "TOOL_NOT_GRANTED" | "AGENT_UNAVAILABLE" | "NO_MARKET_DATA";
 
 export type Outcome =
   | { kind: "ready"; brief: Brief; notice: LlmNotice | null }
@@ -38,14 +38,35 @@ export function toRunError(e: unknown): RunError {
   return "UPSTREAM_DOWN"; // tool_timeout, tool_failed, …
 }
 
-async function tool<T>(anna: AnnaClient, method: string, args: object): Promise<T> {
+/** Seconds the upstream asked us to wait ("UPSTREAM_RATE_LIMITED retry_after=42"), if any. */
+export function retryAfterS(e: unknown): number | null {
+  const m = /retry_after=(\d+)/.exec(e instanceof Error ? e.message : String(e));
+  return m ? Number(m[1]) : null;
+}
+
+/** Longest wait we show a countdown for; beyond it the run ends with the rate-limit error. */
+export const MAX_WAIT_S = 70;
+
+export type OnWait = (untilMs: number | null) => void;
+
+/**
+ * ch06 §6.8 rate-limit handling, adapted to the measured keyless CoinGecko window (~5
+ * requests/min, Retry-After up to 60 s): wait exactly as long as the upstream asked (the UI
+ * shows a countdown through onWait) and retry once; without a hint, retry twice after 3 s.
+ */
+async function tool<T>(anna: AnnaClient, method: string, args: object,
+  onWait?: OnWait): Promise<T> {
   for (let attempt = 0; ; attempt++) {
     try {
       return await anna.invokeTool<T>(method, args);
     } catch (e) {
-      // ch06 §6.8: "Data source is rate-limited; retrying in 3 s…" (auto-retry ×2)
-      if (attempt < 2 && toRunError(e) === "UPSTREAM_RATE_LIMITED") { await sleep(3000); continue; }
-      throw e;
+      if (toRunError(e) !== "UPSTREAM_RATE_LIMITED") throw e;
+      const hinted = retryAfterS(e);
+      if (hinted === null ? attempt >= 2 : attempt >= 1 || hinted > MAX_WAIT_S) throw e;
+      const waitMs = hinted === null ? 3000 : hinted * 1000 + 500;
+      onWait?.(Date.now() + waitMs);
+      await sleep(waitMs);
+      onWait?.(null);
     }
   }
 }
@@ -54,10 +75,10 @@ const sameFlags = (a: RiskFlag[], b: RiskFlag[]) =>
   a.map((f) => f.code + f.severity).join() === b.map((f) => f.code + f.severity).join();
 
 export async function runBrief(anna: AnnaClient, query: string,
-  onStep: (s: Step) => void): Promise<Outcome> {
+  onStep: (s: Step) => void, onWait?: OnWait): Promise<Outcome> {
   try {
     onStep("resolving");
-    const resolved = await tool<ResolvedToken>(anna, "resolve_token", { query });
+    const resolved = await tool<ResolvedToken>(anna, "resolve_token", { query }, onWait);
     if (resolved.status === "not_found") {
       return { kind: "error", code: resolved.query.kind === "invalid" ? "INPUT_INVALID" : "NOT_FOUND" };
     }
@@ -69,15 +90,18 @@ export async function runBrief(anna: AnnaClient, query: string,
     onStep("fetching");
     const [metrics, pairs] = await Promise.all([
       tool<Metrics>(anna, "fetch_metrics",
-        { cgId: t.cgId, chain: t.primaryChain, address: t.primaryAddress, symbol: t.symbol }),
+        { cgId: t.cgId, chain: t.primaryChain, address: t.primaryAddress, symbol: t.symbol },
+        onWait),
       t.primaryAddress
         ? tool<PairsResult>(anna, "fetch_pairs",
-          { chain: t.primaryChain, address: t.primaryAddress }).catch(() => null)
+          { chain: t.primaryChain, address: t.primaryAddress }, onWait).catch(() => null)
         : Promise.resolve(null),
     ]);
+    // §11.8: a brief without a live price is not a meaningful result — say so instead.
+    if (metrics.priceUsd.value === null) return { kind: "error", code: "NO_MARKET_DATA" };
     onStep("flagging");
     const { flags } = await tool<{ flags: RiskFlag[] }>(anna, "risk_flags",
-      pairs ? { metrics, pairs } : { metrics });
+      pairs ? { metrics, pairs } : { metrics }, onWait);
     const facts = buildFacts(metrics, pairs, flags);
     const allow = allowList(metrics);
     const id = `${t.cgId ?? t.primaryAddress}:${new Date().toISOString().slice(0, 13)}`;

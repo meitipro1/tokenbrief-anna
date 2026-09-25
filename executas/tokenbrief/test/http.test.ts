@@ -3,8 +3,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TtlCache } from "../src/clients/cache.js";
 import { clearHttpCache, fetchJson } from "../src/clients/http.js";
-import { acquire, penalize, resetLimiter } from "../src/clients/limiter.js";
-import { RateLimitTimeout, UpstreamError } from "../src/errors.js";
+import { acquire, penalize, refund, resetLimiter } from "../src/clients/limiter.js";
+import { RateLimitTimeout, toolErrorCode, UpstreamError } from "../src/errors.js";
 
 const json = (body: unknown, status = 200, headers: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), { status, headers });
@@ -105,8 +105,66 @@ describe("limiter", () => {
     await acquire("api.other.com", 250); // other hosts are not delayed
   });
 
-  it("fails fast when the queue wait would exceed the cap", async () => {
+  it("fails fast when the queue wait would exceed the cap, with the wait attached", async () => {
     penalize("api.coingecko.com", 60_000);
-    await expect(acquire("api.coingecko.com")).rejects.toBeInstanceOf(RateLimitTimeout);
+    const err = await acquire("api.coingecko.com").catch((e) => e);
+    expect(err).toBeInstanceOf(RateLimitTimeout);
+    expect(err.retryAfterS).toBeGreaterThanOrEqual(59);
+    expect(toolErrorCode(err)).toMatch(/^UPSTREAM_RATE_LIMITED retry_after=(59|60)$/);
+  });
+
+  it("allows at most `budget` requests per 60 s window (keyless CoinGecko ≈ 5)", async () => {
+    for (let i = 0; i < 5; i++) await acquire("api.coingecko.com", 0, 5);
+    const err = await acquire("api.coingecko.com", 0, 5).catch((e) => e);
+    expect(err).toBeInstanceOf(RateLimitTimeout); // the 6th would wait ~60 s > 20 s cap
+    expect(err.retryAfterS).toBeGreaterThan(50);
+  });
+
+  it("a CDN cache hit gives its slot back", async () => {
+    const slots = [];
+    for (let i = 0; i < 5; i++) slots.push(await acquire("api.coingecko.com", 0, 5));
+    refund(slots[4]);
+    await expect(acquire("api.coingecko.com", 0, 5)).resolves.toBeTruthy();
+  });
+
+  it("waits for the window when the wait is short", async () => {
+    vi.useFakeTimers();
+    for (let i = 0; i < 2; i++) await acquire("api.example.com", 0, 2);
+    let done = false;
+    // the window is 60 s; the queue cap (20 s) forbids that, so use a nearly-full window
+    vi.setSystemTime(Date.now() + 50_000);
+    const p = acquire("api.example.com", 0, 2).then(() => { done = true; });
+    await vi.advanceTimersByTimeAsync(9_000);
+    expect(done).toBe(false);
+    await vi.advanceTimersByTimeAsync(1_500);
+    await p;
+    expect(done).toBe(true);
+  });
+});
+
+describe("upstream failure shapes (§11.9)", () => {
+  it("a 429 carries Retry-After to the tool error code", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(json({}, 429, { "retry-after": "42" })));
+    const err = await fetchJson("https://api.coingecko.com/api/v3/y", { ttl: 60, retries: 0 })
+      .catch((e) => e);
+    expect(toolErrorCode(err)).toBe("UPSTREAM_RATE_LIMITED retry_after=42");
+  });
+
+  it("a hung upstream is aborted at the per-call timeout, not the tool timeout", async () => {
+    vi.stubGlobal("fetch", vi.fn((_url: string, init: RequestInit) => new Promise((_, reject) => {
+      init.signal?.addEventListener("abort", () => reject(new Error("aborted")));
+    })));
+    const t0 = Date.now();
+    const err = await fetchJson("https://api.dexscreener.com/slow",
+      { ttl: 60, retries: 0, timeoutMs: 80 }).catch((e) => e);
+    expect(err.tag).toBe("dexscreener:timeout");
+    expect(Date.now() - t0).toBeLessThan(2_000);
+  });
+
+  it("a 503 then success is transparent; a 503 twice becomes UPSTREAM_DOWN", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(json({}, 503)));
+    const err = await fetchJson("https://api.dexscreener.com/z", { ttl: 60, retries: 0 })
+      .catch((e) => e);
+    expect(toolErrorCode(err)).toBe("UPSTREAM_DOWN");
   });
 });

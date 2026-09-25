@@ -60,16 +60,21 @@ const en = {
   errors: {
     INPUT_INVALID: "Paste a ticker, a contract address, or a CoinGecko/CMC/DexScreener link.",
     NOT_FOUND: "No token found on CoinGecko or DexScreener. Try the contract address.",
-    UPSTREAM_RATE_LIMITED: "Data source is rate-limited; try again in a minute.",
+    UPSTREAM_RATE_LIMITED: "CoinGecko's free API is rate-limited right now. Try again in a " +
+      "minute — or paste the token's contract address, which works without CoinGecko.",
     UPSTREAM_DOWN: "Both data sources failed. Try again in a minute.",
     TOOL_NOT_GRANTED: "App configuration error — please update the app.",
     AGENT_UNAVAILABLE: "Your Anna Agent is offline, so the data tools cannot run. Start it and retry.",
+    NO_MARKET_DATA: "Found the token, but neither CoinGecko nor DexScreener has a live price for " +
+      "it right now, so there is nothing to brief yet.",
     LLM_QUOTA: "AI summary unavailable (quota); showing data-only brief.",
     LLM_INVALID: "AI summary unavailable; showing data-only brief.",
     LLM_UNAVAILABLE: "AI summary unavailable; showing data-only brief.",
     TRANSLATE_FAILED: "Persian version unavailable right now.",
   } as Record<string, string>,
   retry: "Retry",
+  waiting: (sec: number) => `CoinGecko's free API asked us to wait — retrying in ${sec} s. ` +
+    "Tip: a contract address works without CoinGecko.",
   flagMessages: {} as Record<string, string>, // English uses the Executa's own message
   exitRisk: "Exit-liquidity risk: no sells, a single pool, and a fresh pair together.",
   mockBanner: "Preview mode: recorded data and a canned AI reply (not connected to Anna).",
@@ -135,16 +140,21 @@ const fa: Strings = {
   errors: {
     INPUT_INVALID: "یک نماد، آدرس قرارداد، یا لینک CoinGecko/CMC/DexScreener بچسبانید.",
     NOT_FOUND: "توکنی در CoinGecko یا DexScreener پیدا نشد. آدرس قرارداد را امتحان کنید.",
-    UPSTREAM_RATE_LIMITED: "منبع داده محدودیت درخواست دارد؛ یک دقیقه دیگر دوباره امتحان کنید.",
+    UPSTREAM_RATE_LIMITED: "API رایگان CoinGecko الان محدودیت درخواست دارد. یک دقیقه دیگر " +
+      "دوباره امتحان کنید — یا آدرس قرارداد توکن را بچسبانید که بدون CoinGecko هم کار می‌کند.",
     UPSTREAM_DOWN: "هر دو منبع داده خطا دادند. یک دقیقه دیگر دوباره امتحان کنید.",
     TOOL_NOT_GRANTED: "خطای پیکربندی برنامه — لطفاً برنامه را به‌روز کنید.",
     AGENT_UNAVAILABLE: "Anna Agent شما آفلاین است و ابزارهای داده اجرا نمی‌شوند. آن را روشن کنید و دوباره امتحان کنید.",
+    NO_MARKET_DATA: "توکن پیدا شد، اما الان نه CoinGecko و نه DexScreener قیمت زنده‌ای برایش ندارند؛ " +
+      "هنوز چیزی برای بریف وجود ندارد.",
     LLM_QUOTA: "خلاصهٔ هوش مصنوعی در دسترس نیست (سهمیه)؛ بریف فقط‌داده نمایش داده می‌شود.",
     LLM_INVALID: "خلاصهٔ هوش مصنوعی در دسترس نیست؛ بریف فقط‌داده نمایش داده می‌شود.",
     LLM_UNAVAILABLE: "خلاصهٔ هوش مصنوعی در دسترس نیست؛ بریف فقط‌داده نمایش داده می‌شود.",
     TRANSLATE_FAILED: "نسخهٔ فارسی الان در دسترس نیست.",
   },
   retry: "تلاش دوباره",
+  waiting: (sec: number) => `API رایگان CoinGecko خواسته صبر کنیم — تلاش دوباره تا ${sec} ثانیه دیگر. ` +
+    "نکته: آدرس قرارداد بدون CoinGecko کار می‌کند.",
   flagMessages: {
     "FRESH_PAIR:high": "نخستین جفت معاملاتی همین تازگی ساخته شده است.",
     "FRESH_PAIR:warn": "نخستین جفت معاملاتی تازه است.",

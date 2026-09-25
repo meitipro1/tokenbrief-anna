@@ -3,6 +3,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fetchMetrics, snippet } from "../src/tools/metrics.js";
 import { fetchPairs } from "../src/tools/pairs.js";
+import { resolveToken } from "../src/tools/resolve.js";
+import { riskFlags } from "../src/tools/risk.js";
 import { cgCoin, dsPair, routeFetch } from "./helpers.js";
 
 afterEach(() => vi.unstubAllGlobals());
@@ -102,6 +104,52 @@ describe("fetch_metrics (ch06 §6.4.2)", () => {
     routeFetch([["api.coingecko.com", {}, 429]]);
     await expect(fetchMetrics({ cgId: "bitcoin", symbol: "BTC" })).rejects.toMatchObject(
       { tag: "coingecko:429" });
+  });
+
+  it("reuses the contract lookup: no second /coins/{id} request after an address resolve",
+    async () => {
+      const { seen } = routeFetch([
+        ["/latest/dex/search", { pairs: [liq(4e5, 1)] }],
+        ["/token-pairs/v1/ethereum/", [liq(4e5, 1)]],
+        ["/coins/ethereum/contract/", cgCoin("meme", "meme")],
+        ["/search?query=meme", { coins: [{ id: "meme", symbol: "MEME", name: "Meme" }] }],
+      ]);
+      const r = await resolveToken({ query: ADDR });
+      const t = r.token!;
+      const m = await fetchMetrics({ cgId: t.cgId, chain: t.primaryChain,
+        address: t.primaryAddress, symbol: t.symbol });
+      expect(m.priceUsd.source).toBe("coingecko");
+      expect(seen.some((u) => u.includes("/coins/meme?"))).toBe(false); // primed
+      expect(seen.some((u) => u.includes("/coins/markets"))).toBe(false); // twins use rank
+    });
+
+  it("without a cgId it confirms the CoinGecko listing itself (404 → really not listed)",
+    async () => {
+      const { seen } = routeFetch([
+        ["/token-pairs/v1/base/", [liq(4e5, 1, { chainId: "base" })]],
+        ["/search?query=meme", { coins: [] }],
+      ]);
+      const m = await fetchMetrics({ chain: "base", address: ADDR, symbol: "MEME" });
+      expect(seen.filter((u) => u.includes("/coins/base/contract/"))).toHaveLength(1);
+      expect(m.cgId).toBeNull();
+      expect(m.errors).toEqual([]); // listing absence is confirmed, not assumed
+    });
+
+  it("a bonding-curve pair without a liquidity field reports liquidity as not checked", async () => {
+    routeFetch([
+      ["/token-pairs/v1/solana/", [dsPair({ chainId: "solana", liquidity: undefined,
+        pairCreatedAt: Date.now() - 3_600_000, baseToken: { address: ADDR, name: "Emma",
+          symbol: "Emma" } })]],
+      ["/search?query=emma", { coins: [] }],
+    ]);
+    const m = await fetchMetrics({ chain: "solana", address: ADDR, symbol: "EMMA" });
+    const p = await fetchPairs({ chain: "solana", address: ADDR });
+    expect(m.liquidityUsd.value).toBeNull();
+    const codes = riskFlags({ metrics: m, pairs: p }).flags.map((f) => `${f.code}:${f.severity}`);
+    expect(codes).toContain("FRESH_PAIR:high");
+    expect(codes).not.toContain("LOW_LIQUIDITY:high");
+    const partial = riskFlags({ metrics: m, pairs: p }).flags.find((f) => f.code === "PARTIAL_DATA");
+    expect(String(partial?.evidence.skipped)).toContain("liquidityUsd null");
   });
 
   it("requires cgId or address", async () => {

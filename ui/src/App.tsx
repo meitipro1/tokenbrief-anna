@@ -34,6 +34,8 @@ export default function App() {
   const [recent, setRecent] = useState<RecentItem[]>([]);
   const [mock, setMock] = useState(false);
   const [bootError, setBootError] = useState(false);
+  const [waitUntil, setWaitUntil] = useState<number | null>(null);
+  const [now, setNow] = useState(() => Date.now());
   const s = STRINGS[lang];
 
   useEffect(() => {
@@ -55,12 +57,21 @@ export default function App() {
     document.documentElement.lang = lang;
   }, [lang]);
 
+  useEffect(() => { // 1 s tick while a rate-limit countdown is shown
+    if (!waitUntil) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [waitUntil]);
+
   async function start(q: string) {
     const a = annaRef.current;
     if (!a || !q.trim()) return;
     setQuery(q); setBrief(null); setChat([]); setNotice(null);
     dispatch({ type: "submit" });
-    apply(await runBrief(a, q.trim(), (step) => dispatch({ type: "step", step })));
+    const out = await runBrief(a, q.trim(), (step) => dispatch({ type: "step", step }),
+      (until) => { setWaitUntil(until); setNow(Date.now()); });
+    setWaitUntil(null);
+    apply(out);
   }
 
   function apply(out: Outcome) {
@@ -173,7 +184,8 @@ export default function App() {
       )}
 
       {(state.k === "resolving" || state.k === "fetching" || state.k === "flagging" ||
-        state.k === "synthesizing") && <StatusBar s={s} step={state.k} />}
+        state.k === "synthesizing") && <StatusBar s={s} step={state.k}
+        waitS={waitUntil ? Math.max(0, Math.ceil((waitUntil - now) / 1000)) : null} />}
 
       {state.k === "error" && (
         <div className="space-y-2 rounded-lg border border-[var(--high)] bg-[var(--high-bg)] p-3" role="alert">
@@ -196,7 +208,7 @@ export default function App() {
           <div className="rounded-xl border border-[var(--line)] bg-[var(--card)] p-4">
             <div className="flex flex-wrap items-baseline justify-between gap-2" dir="ltr">
               <h2 className="text-lg font-bold">{t.name} <span className="text-[var(--muted)]">${t.symbol}</span></h2>
-              {t.primaryChain && <span className="rounded-full border border-[var(--line)] px-2
+              {t.primaryChain && t.primaryChain !== "other" && <span className="rounded-full border border-[var(--line)] px-2
                 py-0.5 text-[12px]">{t.primaryChain}</span>}
             </div>
             {t.primaryAddress && <p className="mt-1 break-all font-mono text-[12px] text-[var(--muted)]"

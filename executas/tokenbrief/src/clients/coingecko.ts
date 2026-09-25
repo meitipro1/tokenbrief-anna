@@ -2,7 +2,7 @@
 // search lower-cases the term and markets sorts its ids, so the resolve path and the
 // twin-ticker path share cache entries.
 import { CONFIG } from "./config.js";
-import { fetchJson } from "./http.js";
+import { fetchJson, peekJson, primeJson, type Fetched } from "./http.js";
 
 type Usd = { usd?: number | null };
 
@@ -47,18 +47,38 @@ export async function search(term: string): Promise<CgSearchCoin[]> {
   return r?.data.coins ?? [];
 }
 
-export async function markets(ids: string[]): Promise<CgMarket[]> {
+function marketsUrl(ids: string[]): string | null {
   const sorted = [...new Set(ids)].sort().slice(0, 50);
-  if (sorted.length === 0) return [];
-  const url = `${B}/coins/markets?vs_currency=usd&ids=${sorted.map(e).join(",")}` +
-    `&per_page=${sorted.length}&page=1`;
+  return sorted.length ? `${B}/coins/markets?vs_currency=usd&ids=${sorted.map(e).join(",")}` +
+    `&per_page=${sorted.length}&page=1` : null;
+}
+
+export async function markets(ids: string[]): Promise<CgMarket[]> {
+  const url = marketsUrl(ids);
+  if (!url) return [];
   const r = await fetchJson<CgMarket[]>(url, { ttl: CONFIG.CACHE_MARKETS_TTL_S });
   return r?.data ?? [];
 }
 
-export const coin = (id: string) =>
-  fetchJson<CgCoin>(`${B}/coins/${e(id)}?${COIN_QS}`, { ttl: CONFIG.CACHE_COIN_TTL_S });
+/** Market caps only if this exact id set is already cached — never a network call. */
+export function peekMarkets(ids: string[]): CgMarket[] {
+  const url = marketsUrl(ids);
+  return (url && peekJson<CgMarket[]>(url)?.data) || [];
+}
 
-export const coinByContract = (platform: string, address: string) =>
-  fetchJson<CgCoin>(`${B}/coins/${e(platform)}/contract/${e(address)}`,
+const coinUrl = (id: string) => `${B}/coins/${e(id)}?${COIN_QS}`;
+
+export const coin = (id: string) => fetchJson<CgCoin>(coinUrl(id), { ttl: CONFIG.CACHE_COIN_TTL_S });
+
+/**
+ * Contract lookup. The response is the full coin object (market_data included), so it also
+ * seeds /coins/{id}: fetch_metrics then needs no second CoinGecko request (keyless budget).
+ */
+export async function coinByContract(platform: string, address: string) {
+  const r = await fetchJson<CgCoin>(`${B}/coins/${e(platform)}/contract/${e(address)}`,
     { ttl: CONFIG.CACHE_CONTRACT_TTL_S });
+  if (r?.data?.id && r.data.market_data) {
+    primeJson(coinUrl(r.data.id), r as Fetched<unknown>, CONFIG.CACHE_COIN_TTL_S);
+  }
+  return r;
+}

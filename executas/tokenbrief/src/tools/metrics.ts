@@ -1,10 +1,11 @@
 // executas/tokenbrief/src/tools/metrics.ts — ch06 §6.4.2 and §6.4.4. `pick` is where source
 // attribution happens: a CoinGecko value is tagged coingecko with its fetch time; if missing,
 // the DexScreener value is used and tagged dexscreener (or derived for sums).
+import { toCgPlatform } from "../chains.js";
 import * as cg from "../clients/coingecko.js";
 import { CONFIG, type Config } from "../clients/config.js";
 import type { DsPair } from "../clients/dexscreener.js";
-import { InvalidParams, RateLimitTimeout, UpstreamDown, UpstreamError } from "../errors.js";
+import { InvalidParams, isRateLimited, UpstreamDown, UpstreamError } from "../errors.js";
 import { num, positive } from "../num.js";
 import type { Candidate, Chain, Metrics, Socials, Source, Sourced } from "../types.js";
 import { loadPairs } from "./pairs.js";
@@ -27,13 +28,16 @@ export async function fetchMetrics(a: MetricsArgs, cfg: Config = CONFIG): Promis
   let rateLimited: UpstreamError | null = null;
   const note = (e: unknown): null => {
     errors.push(e instanceof UpstreamError ? e.tag : "internal:error");
-    if (e instanceof RateLimitTimeout || (e instanceof UpstreamError && e.status === 429)) {
-      rateLimited = e;
-    }
+    if (isRateLimited(e)) rateLimited = e;
     return null;
   };
+  // Without a cgId, ask CoinGecko about the contract itself (normally a cache hit from
+  // resolve_token): a DexScreener-only resolution made while CoinGecko was rate-limited must
+  // not end up claiming "not listed on CoinGecko" (D-7), and a listed token gets its data.
+  const platform = !a.cgId && a.address && a.chain ? toCgPlatform(a.chain) : undefined;
   const [coin, lp] = await Promise.all([
-    a.cgId ? cg.coin(a.cgId).catch(note) : null,
+    a.cgId ? cg.coin(a.cgId).catch(note)
+      : platform ? cg.coinByContract(platform, a.address!).catch(note) : null,
     a.address ? loadPairs(a.address, a.chain, cfg).catch(note) : null,
   ]);
   // §6.4.4: both sources gave nothing. A rate limit is reported as such so the UI retries.
@@ -51,13 +55,14 @@ export async function fetchMetrics(a: MetricsArgs, cfg: Config = CONFIG): Promis
     dsSource: Source = "dexscreener"): Sourced<number> =>
     cgValue !== null && cgValue !== undefined ? S(cgValue, "coingecko", cgAt)
       : S(dsValue, dsSource, dsAt);
+  // Twin tickers: same search and id set as resolve_token, so usually all cache hits.
   const twins: Candidate[] = await symbolCandidates(a.symbol.replace(/^\$/, ""))
     .then((list) => list.filter((x) => x.cgId !== c?.id))
     .catch((e) => { note(e); return []; });
   const genesisAge = ageDays(c?.genesis_date);
   return {
     cgId: c?.id ?? null,
-    symbol: (c?.symbol ?? a.symbol).toUpperCase(),
+    symbol: (c?.symbol ?? a.symbol).replace(/^\$/, "").toUpperCase(),
     name: c?.name ?? best?.baseToken.name ?? a.symbol,
     priceUsd: pick(md?.current_price?.usd, num(best?.priceUsd)),
     change24hPct: pick(md?.price_change_percentage_24h, num(best?.priceChange?.h24)),

@@ -35,7 +35,11 @@ export const CONFIG = Object.freeze({
   RISK_SELL_PRESSURE_MIN_TXNS: n("RISK_SELL_PRESSURE_MIN_TXNS", 50),
   HTTP_TIMEOUT_MS: n("HTTP_TIMEOUT_MS", 8000),
   HTTP_RETRIES: n("HTTP_RETRIES", 2),
-  CG_MIN_INTERVAL_MS: n("CG_MIN_INTERVAL_MS", 2100),
+  // Keyless CoinGecko: ~5 origin requests per minute (measured 2026-09-25, decisions D-17);
+  // DexScreener documents 300/min on pair/search endpoints. 0 disables the budget.
+  CG_PER_MINUTE: n("CG_PER_MINUTE", 5), // added
+  DS_PER_MINUTE: n("DS_PER_MINUTE", 240), // added
+  CG_MIN_INTERVAL_MS: n("CG_MIN_INTERVAL_MS", 500),
   DS_MIN_INTERVAL_MS: n("DS_MIN_INTERVAL_MS", 250),
   LIMITER_MAX_WAIT_MS: n("LIMITER_MAX_WAIT_MS", 20_000),
   CACHE_SEARCH_TTL_S: n("CACHE_SEARCH_TTL_S", 600),
@@ -46,6 +50,7 @@ export const CONFIG = Object.freeze({
   CACHE_PAIR_TTL_S: n("CACHE_PAIR_TTL_S", 600),
   CACHE_NEGATIVE_TTL_S: n("CACHE_NEGATIVE_TTL_S", 300),
   CACHE_RESOLVED_TTL_S: n("CACHE_RESOLVED_TTL_S", 600),
+  CACHE_DEGRADED_TTL_S: n("CACHE_DEGRADED_TTL_S", 30), // added: resolved while an upstream failed
   CACHE_STALE_S: n("CACHE_STALE_S", 900),
   CACHE_MAX_ENTRIES: n("CACHE_MAX_ENTRIES", 500),
 });

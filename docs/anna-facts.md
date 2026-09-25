@@ -95,3 +95,19 @@ fetched 2026-09-24), in the `@anna-ai/cli` 0.1.53 source/help, or observed in `a
 - Review checks: manifest vs live catalogue, listing copy/screenshots vs behaviour, mobile rows.
   "No enforced SLA" (docs) vs 3–5 business days (program thread).
 - Limits: 10 app creations/day, 5 review submissions/day, 20 active apps.
+
+## Data APIs (measured live, 2026-09-25)
+
+- CoinGecko keyless (`api.coingecko.com/api/v3`): about **5 origin requests per minute per IP**.
+  The 6th cache-miss request in a minute returns `429` with `Retry-After` counting down to the
+  end of a fixed 60 s window (60, 57, 54 …). Responses are fronted by Cloudflare
+  (`Cache-Control: max-age=30, s-maxage=600`; `cf-cache-status: HIT` responses never reach the
+  origin, so they do not use the budget). Encoded in `CG_PER_MINUTE` (decisions D-17).
+- `/coins/{platform}/contract/{address}` returns the full coin object including `market_data`,
+  so it doubles as `/coins/{id}`.
+- DexScreener: `/token-pairs/v1/{chain}/{address}` returns a bare array (≤ 30 pools, both
+  sides); `/latest/dex/search` returns `{pairs}` (30) and is polluted by clones with fake
+  liquidity (a days-old "Arbitrum" on Solana reported $207M), so it is never used to guess
+  which token a ticker means (D-16). Symbols can carry a leading `$` (`$WIF`) or odd case (`Wif`).
+  `url` fields and dexscreener.com links lowercase Solana pair addresses; the pairs endpoint
+  accepts them. pump.fun bonding-curve pairs have no `liquidity` field at all.

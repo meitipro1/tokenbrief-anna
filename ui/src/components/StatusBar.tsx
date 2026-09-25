@@ -4,7 +4,7 @@ import type { Step } from "../run/runBrief";
 const ORDER: Step[] = ["resolving", "fetching", "flagging", "synthesizing"];
 
 /** The 4-step progress line (Journey A step 3): resolve → numbers → flags → brief. */
-export function StatusBar(p: { s: Strings; step: Step }) {
+export function StatusBar(p: { s: Strings; step: Step; waitS?: number | null }) {
   const at = ORDER.indexOf(p.step);
   return (
     <div className="space-y-2" role="status" aria-live="polite">
@@ -20,6 +20,9 @@ export function StatusBar(p: { s: Strings; step: Step }) {
         ))}
       </ol>
       <p className="text-sm text-[var(--muted)]">{p.s.steps[p.step]}</p>
+      {p.waitS !== null && p.waitS !== undefined && (
+        <p className="rounded-lg bg-[var(--warn-bg)] p-2 text-[13px]">{p.s.waiting(p.waitS)}</p>
+      )}
     </div>
   );
 }

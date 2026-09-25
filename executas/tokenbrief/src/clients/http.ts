@@ -1,5 +1,6 @@
 // executas/tokenbrief/src/clients/http.ts — every network call goes through fetchJson:
-// timeout, retry, per-host spacing, TTL cache with single-flight + stale fallback, evidence.
+// timeout, retry, per-host budget (limiter.ts), TTL cache with single-flight + stale fallback,
+// evidence capture.
 import { createHash } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -7,7 +8,7 @@ import { UpstreamError } from "../errors.js";
 import { log } from "../log.js";
 import { TtlCache } from "./cache.js";
 import { CONFIG } from "./config.js";
-import { acquire, penalize } from "./limiter.js";
+import { acquire, penalize, refund } from "./limiter.js";
 
 export interface Fetched<T> { data: T; fetchedAt: string }
 export interface FetchOpts { ttl: number; timeoutMs?: number; retries?: number }
@@ -17,6 +18,13 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const backoff = (attempt: number) => 1000 * 2 ** attempt;
 
 export const clearHttpCache = () => cache.clear();
+
+/** Fresh cached response for `url`, without any network call (undefined = not cached). */
+export const peekJson = <T>(url: string) => cache.get(url) as Fetched<T> | null | undefined;
+
+/** Seed the cache, e.g. /coins/{id} from a /coins/{platform}/contract/{addr} response. */
+export const primeJson = (url: string, value: Fetched<unknown>, ttlS: number) =>
+  cache.set(url, value, ttlS);
 
 /** 404 → null (negative-cached); 429/5xx/network → retried; other 4xx → UpstreamError. */
 export function fetchJson<T>(url: string, opts: FetchOpts): Promise<Fetched<T> | null> {
@@ -28,7 +36,7 @@ async function load(url: string, opts: FetchOpts): Promise<Fetched<unknown> | nu
   const host = new URL(url).host;
   const retries = opts.retries ?? CONFIG.HTTP_RETRIES;
   for (let attempt = 0; ; attempt++) {
-    await acquire(host);
+    const slot = await acquire(host);
     let res: Response;
     try {
       res = await fetch(url, {
@@ -39,12 +47,20 @@ async function load(url: string, opts: FetchOpts): Promise<Fetched<unknown> | nu
       if (attempt < retries) { await sleep(backoff(attempt)); continue; }
       throw new UpstreamError(host, "timeout");
     }
-    log(`GET ${host}${new URL(url).pathname} → ${res.status}`);
-    if (res.status === 404) return null;
+    const cdn = res.headers.get("cf-cache-status");
+    if (cdn === "HIT") refund(slot); // served by the CDN: the origin budget was not used
+    log(`GET ${host}${new URL(url).pathname} → ${res.status}${cdn ? ` (${cdn})` : ""}`);
+    if (res.status === 404) { // a definite "no such coin" — recorded so replays see it too
+      if (process.env.TOKENBRIEF_EVIDENCE === "1") {
+        await saveEvidence(url, res, await res.text(), new Date().toISOString());
+      }
+      return null;
+    }
     if (res.status === 429) {
-      penalize(host, retryAfterMs(res)); // acquire() on the next loop waits it out
-      if (attempt < retries) continue;
-      throw new UpstreamError(host, 429);
+      const wait = retryAfterMs(res);
+      penalize(host, wait); // every caller of this host waits it out
+      if (attempt < retries) continue; // acquire() waits, or fails fast with the wait
+      throw new UpstreamError(host, 429, Math.ceil(wait / 1000));
     }
     if (res.status >= 500) {
       if (attempt < retries) { await sleep(backoff(attempt)); continue; }
