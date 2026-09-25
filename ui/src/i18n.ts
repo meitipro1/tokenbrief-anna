@@ -59,7 +59,9 @@ const en = {
   holdersNa: "n/a (no free source)",
   errors: {
     INPUT_INVALID: "Paste a ticker, a contract address, or a CoinGecko/CMC/DexScreener link.",
-    NOT_FOUND: "No token found on CoinGecko or DexScreener. Try the contract address.",
+    NOT_FOUND: "No token found for this address or link on CoinGecko or DexScreener.",
+    NOT_FOUND_TICKER: "No coin with that ticker or name on CoinGecko. Try the contract address — " +
+      "addresses are also looked up on DexScreener.",
     UPSTREAM_RATE_LIMITED: "CoinGecko's free API is rate-limited right now. Try again in a " +
       "minute — or paste the token's contract address, which works without CoinGecko.",
     UPSTREAM_DOWN: "Both data sources failed. Try again in a minute.",
@@ -139,7 +141,9 @@ const fa: Strings = {
   holdersNa: "نامشخص (منبع رایگانی نیست)",
   errors: {
     INPUT_INVALID: "یک نماد، آدرس قرارداد، یا لینک CoinGecko/CMC/DexScreener بچسبانید.",
-    NOT_FOUND: "توکنی در CoinGecko یا DexScreener پیدا نشد. آدرس قرارداد را امتحان کنید.",
+    NOT_FOUND: "برای این آدرس یا لینک توکنی در CoinGecko یا DexScreener پیدا نشد.",
+    NOT_FOUND_TICKER: "کوینی با این نماد یا نام در CoinGecko پیدا نشد. " +
+      "آدرس قرارداد را امتحان کنید — آدرس‌ها در DexScreener هم جست‌وجو می‌شوند.",
     UPSTREAM_RATE_LIMITED: "API رایگان CoinGecko الان محدودیت درخواست دارد. یک دقیقه دیگر " +
       "دوباره امتحان کنید — یا آدرس قرارداد توکن را بچسبانید که بدون CoinGecko هم کار می‌کند.",
     UPSTREAM_DOWN: "هر دو منبع داده خطا دادند. یک دقیقه دیگر دوباره امتحان کنید.",

@@ -65,6 +65,21 @@ describe("runBrief rate-limit handling", () => {
     expect(out).toEqual({ kind: "error", code: "NO_MARKET_DATA" });
   });
 
+  it("tickers → NOT_FOUND_TICKER (CoinGecko only), addresses → NOT_FOUND (D-23)", async () => {
+    const anna = client(null);
+    const notFound = (kind: string) => async (m: string) => m === "resolve_token"
+      ? { status: "not_found", query: { raw: "x", kind }, source: "coingecko" } : byTool(m);
+    anna.invokeTool.mockImplementation(notFound("ticker"));
+    expect(await runBrief(anna, "NOTATOKEN123", () => {}))
+      .toEqual({ kind: "error", code: "NOT_FOUND_TICKER" });
+    anna.invokeTool.mockImplementation(notFound("evm_address"));
+    expect(await runBrief(anna, `0x${"1".repeat(40)}`, () => {}))
+      .toEqual({ kind: "error", code: "NOT_FOUND" });
+    anna.invokeTool.mockImplementation(notFound("invalid"));
+    expect(await runBrief(anna, "hello world", () => {}))
+      .toEqual({ kind: "error", code: "INPUT_INVALID" });
+  });
+
   it("other tool failures end the run without waiting", async () => {
     const anna = client("UPSTREAM_DOWN");
     const out = await runBrief(anna, "PEPE", () => {});

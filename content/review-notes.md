@@ -9,7 +9,8 @@ DexScreener URL.
    coins use the ticker); prose, 5 questions, share card; tap **فارسی** for Persian.
 2. `https://dexscreener.com/solana/EP2ib6dYdEeqD8MfE2ezHCxX3kP3K2eLKkirfPm5eyMx` → the pair's
    base token (dogwifhat) on Solana.
-3. `NOTATOKEN123` → "No token found on CoinGecko or DexScreener. Try the contract address."
+3. `NOTATOKEN123` → "No coin with that ticker or name on CoinGecko. Try the contract
+   address — addresses are also looked up on DexScreener."
 
 **Data.** The bundled Executa "TokenBrief Data" (4 tools: resolve_token, fetch_metrics,
 fetch_pairs, risk_flags) calls the keyless CoinGecko and DexScreener public APIs. It declares no
@@ -31,6 +32,12 @@ Numbers are rendered by code; the model writes placeholders that a validator che
 **Known limits (stated in the listing).** Holder counts are not shown (no free source). The
 honeypot signal is a hint (buys without sells over 24h), not a contract simulation.
 Not financial advice.
+
+**If you test many tickers quickly.** Keyless CoinGecko allows about 5 requests a minute per
+IP, and a ticker brief uses 2–3. Past that the app shows "retrying in N s", waits exactly as
+long as CoinGecko asks, and finishes on its own. It never guesses a token from DexScreener
+search instead, because that search is full of look-alike clones. Contract addresses and
+DexScreener links fall back to DexScreener data while CoinGecko is busy.
 
 ## Changes in 0.1.x
 

@@ -10,7 +10,7 @@ import type { Brief, Candidate, Metrics, PairsResult, ResolvedToken, RiskFlag } 
 
 export type Step = "resolving" | "fetching" | "flagging" | "synthesizing";
 export type RunError =
-  | "INPUT_INVALID" | "NOT_FOUND" | "UPSTREAM_DOWN" | "UPSTREAM_RATE_LIMITED"
+  | "INPUT_INVALID" | "NOT_FOUND" | "NOT_FOUND_TICKER" | "UPSTREAM_DOWN" | "UPSTREAM_RATE_LIMITED"
   | "TOOL_NOT_GRANTED" | "AGENT_UNAVAILABLE" | "NO_MARKET_DATA";
 
 export type Outcome =
@@ -80,7 +80,11 @@ export async function runBrief(anna: AnnaClient, query: string,
     onStep("resolving");
     const resolved = await tool<ResolvedToken>(anna, "resolve_token", { query }, onWait);
     if (resolved.status === "not_found") {
-      return { kind: "error", code: resolved.query.kind === "invalid" ? "INPUT_INVALID" : "NOT_FOUND" };
+      // tickers are searched on CoinGecko only (D-16), so their message must not claim more (D-23)
+      const k = resolved.query.kind;
+      const code = k === "invalid" ? "INPUT_INVALID"
+        : k === "ticker" ? "NOT_FOUND_TICKER" : "NOT_FOUND";
+      return { kind: "error", code };
     }
     if (resolved.status === "ambiguous") {
       return { kind: "choose", candidates: resolved.candidates ?? [],
