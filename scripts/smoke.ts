@@ -1,6 +1,7 @@
 // scripts/smoke.ts — spawns the built plugin exactly the way Anna does (stdin/stdout pipes,
 // stderr passed through), checks describe/health/-32601, then runs the §4.3 tool chain.
 //   pnpm smoke -- PEPE [--record fixtures/tools/pepe.jsonl] [--quiet]
+//   pnpm smoke -- PEPE --exe <extracted release binary>   (the packaged Executa instead)
 // Exits non-zero if any stdout line is not JSON, a frame lacks jsonrpc "2.0", or a tool
 // returns success:false. A not_found status is a successful result (exit 0).
 import { spawn } from "node:child_process";
@@ -17,6 +18,7 @@ const take = (flag: string): string | undefined => {
   return i >= 0 ? argv.splice(i, 2)[1] : undefined;
 };
 const record = take("--record");
+const exe = take("--exe");
 const quietAt = argv.indexOf("--quiet");
 const quiet = quietAt >= 0 && Boolean(argv.splice(quietAt, 1));
 const query = argv.join(" ") || "PEPE";
@@ -26,7 +28,8 @@ if (record) {
   writeFileSync(record, "");
 }
 
-const child = spawn(process.execPath, [PLUGIN], { stdio: ["pipe", "pipe", "inherit"] });
+const child = spawn(exe ?? process.execPath, exe ? [] : [PLUGIN],
+  { stdio: ["pipe", "pipe", "inherit"] });
 const pending = new Map<number, (m: Json) => void>();
 let nextId = 1;
 let failed = false;
