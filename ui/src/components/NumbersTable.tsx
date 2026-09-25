@@ -1,4 +1,4 @@
-import type { Strings } from "../i18n";
+import type { Lang, Strings } from "../i18n";
 import { formatFact } from "../synthesis/substitute";
 import type { Brief } from "../types";
 
@@ -6,8 +6,9 @@ const ROWS = ["F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11"
 
 const hhmm = (iso: string | null) => (iso ? `${iso.slice(11, 16)} UTC` : "");
 
-/** Key numbers: rendered from FACTS only (code, never prose). Always LTR, Latin digits. */
-export function NumbersTable(p: { s: Strings; brief: Brief }) {
+/** Key numbers: rendered from FACTS only (code, never prose). Always LTR, Latin digits; the
+ * few words in values ("days", "n/a") follow the UI language like the labels do. */
+export function NumbersTable(p: { s: Strings; brief: Brief; lang: Lang }) {
   const f = p.brief.facts;
   return (
     <table className="w-full text-[14px]" dir="ltr">
@@ -16,7 +17,7 @@ export function NumbersTable(p: { s: Strings; brief: Brief }) {
           <tr key={id} className="border-b border-[var(--line)] last:border-0">
             <td className="py-2 pe-2 text-[var(--muted)]">{p.s.labels[id] ?? f[id].label}</td>
             <td className={`py-2 text-end font-mono ${id === "F2" ? trend(f[id].value) : ""}`}>
-              {formatFact(f[id], "en")}
+              {formatFact(f[id], p.lang)}
             </td>
             <td className="w-[88px] py-2 ps-2 text-end text-[11px] text-[var(--muted)]"
               title={f[id].asOf ?? ""}>

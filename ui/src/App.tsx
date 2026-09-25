@@ -234,7 +234,7 @@ export default function App() {
             </p>
           )}
 
-          <Section title={s.sections.numbers}><NumbersTable s={s} brief={brief} /></Section>
+          <Section title={s.sections.numbers}><NumbersTable s={s} brief={brief} lang={lang} /></Section>
           <Section title={s.sections.flags}><FlagList s={s} flags={brief.flags} /></Section>
           {state.k === "translating" && <p className="animate-pulse text-sm text-[var(--muted)]">
             {s.thinking}</p>}

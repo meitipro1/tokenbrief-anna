@@ -1,7 +1,7 @@
 // ui/src/synthesis/share.ts — ShareCard: the validated share text with numbers substituted
 // from FACTS, a "not financial advice" line and the link, capped at 280 characters.
 import type { BriefText, Fact, ShareCard } from "../types";
-import { substitute, type Lang } from "./substitute";
+import { isolate, substitute, type Lang } from "./substitute";
 
 export const SHARE_MAX = 280;
 const NOTE = { en: "Not financial advice.", fa: "توصیهٔ مالی نیست." };
@@ -19,6 +19,11 @@ export function shareText(brief: BriefText, facts: Record<string, Fact>, lang: L
   const tail = `\n${NOTE[lang]} ${link}`;
   let body = substitute(brief.share, facts, lang).replace(/\s+/g, " ").trim();
   if (!body.toUpperCase().includes(symbol.toUpperCase())) body = `$${symbol} — ${body}`;
+  if (lang === "fa") {
+    // Telegram and X pick a message's direction from its first strong letter: start with an
+    // RLM so the Persian card is laid out right-to-left, and keep "$PEPE" in one piece.
+    body = "\u200f" + body.replace(/\$[A-Za-z][A-Za-z0-9]{0,14}\b/g, isolate);
+  }
   return fit(body, SHARE_MAX - tail.length) + tail;
 }
 

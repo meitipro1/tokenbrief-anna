@@ -35,12 +35,21 @@ export function formatFact(f: Pick<Fact, "value" | "unit">, lang: Lang): string 
   }
 }
 
+/** First-strong isolate: the enclosed text takes its direction from its own first strong
+ * letter (none, as in "$0.235" or "-6.0%" → left-to-right) and is laid out as one unit. */
+export const isolate = (s: string): string => `\u2068${s}\u2069`;
+
+// In Persian (RTL) prose a bare "$0.235" or "-6.0%" is reordered by the bidi algorithm: digits
+// after Arabic-script letters count as Arabic numbers, so "$", "%" and "-" land on the wrong
+// side ("0.235$", "%6.0-"). Each substituted value is isolated so it reads as in the table,
+// and "1,039 روز" keeps its Persian order. English text is left as is.
 export const substitute = (text: string, facts: Record<string, Fact>, lang: Lang): string =>
   text.replace(/\{(F\d+|D1)\}/g, (m, id: string) => {
     const f = facts[id];
     if (!f) return m;
-    if (/^F\d+$/.test(id) && Number(id.slice(1)) >= 14) return flagLabel(f);
-    return formatFact(f, lang); // text facts (incl. D1) are inserted as-is
+    const v = /^F\d+$/.test(id) && Number(id.slice(1)) >= 14 ? flagLabel(f)
+      : formatFact(f, lang); // text facts (incl. D1) are inserted as-is
+    return lang === "fa" ? isolate(v) : v;
   });
 
 /** F14+ carry "CODE:severity"; render them as readable text ("low liquidity (high)"). */

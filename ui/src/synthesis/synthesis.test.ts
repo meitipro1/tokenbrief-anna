@@ -134,6 +134,13 @@ describe("substitute (§6.6.5)", () => {
       .toBe("Price $0.00001234, MC $5.10B, -3.2% 24h; twin ticker (warn).");
   });
 
+  it("Persian: each value is a first-strong isolate, so $ and % stay on the number", () => {
+    const I = (s: string) => `\u2068${s}\u2069`;
+    expect(substitute("قیمت {F1} و تغییر {F2} در 24h", FACTS, "fa"))
+      .toBe(`قیمت ${I("$0.00001234")} و تغییر ${I("-3.2%")} در 24h`);
+    expect(substitute("قیمت {F1}", FACTS, "en")).toBe("قیمت $0.00001234"); // EN untouched
+  });
+
   it("every number in a substituted brief exists in FACTS (the §3.9 rule)", () => {
     const out = [GOOD.what, GOOD.narrative, ...GOOD.questions].map((x) => substitute(x, FACTS, "en"));
     const formatted = new Set(Object.values(FACTS).map((f: Fact) => formatFact(f, "en")));
@@ -160,6 +167,11 @@ describe("share card", () => {
   it("prefixes the symbol when the model left it out", () => {
     expect(shareText({ ...GOOD, share: "Price {F1}" } as never, FACTS, "en", "L", "PEPE"))
       .toMatch(/^\$PEPE — Price \$0\.00001234\n/);
+  });
+  it("Persian card: right-to-left first line, the ticker and numbers isolated", () => {
+    const fa = shareText({ ...GOOD, share: "قیمت {F1}" } as never, FACTS, "fa", "L", "PEPE");
+    expect(fa.startsWith("\u200f\u2068$PEPE\u2069 — قیمت \u2068$0.00001234\u2069")).toBe(true);
+    expect(fa.endsWith("\nتوصیهٔ مالی نیست. L")).toBe(true);
   });
   it("fit trims on a word boundary", () => {
     expect(fit("alpha beta gamma delta", 12)).toBe("alpha beta…");
